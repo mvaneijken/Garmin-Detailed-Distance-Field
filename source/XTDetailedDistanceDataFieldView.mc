@@ -120,16 +120,22 @@ class XTDetailedDistanceDataFieldView extends Ui.DataField {
         	valueFont = Gfx.FONT_NUMBER_MILD;
 			valueFontHeight = Gfx.getFontHeight(valueFont);
 
+			
+			labelPosY = valuePosY - Math.round(valueFontHeight);
+			lastValuePosY = valuePosY + Math.round(valueFontHeight);// + indentY + 5;//  - Math.round(lastValueFontHeight /2);
+						
+			
 			// Somehow the FR935 like devices do not calculate the fontheight correctly, therefor a different calculation is used to place the label and last value.
-			if (screenHeigth > 218){
-				labelPosY = valuePosY - Math.round(valueFontHeight / 1.2) + indentY - 5;
-				lastValuePosY = valuePosY + Math.round(valueFontHeight / 1.2) + indentY + 5;
-			}
-			else{
-				labelPosY = valuePosY - Math.round(valueFontHeight / 2) + indentY - 5;// + Math.round(labelFontHeight / 2);
-				lastValuePosY = valuePosY + Math.round(valueFontHeight / 2) + indentY + 5;//  - Math.round(lastValueFontHeight /2);
-			}
-			valuePosY = Math.round(height / 2) + indentY;
+					
+			//if (screenHeigth > 218){
+			//	labelPosY = valuePosY - Math.round(valueFontHeight / 1.2) + indentY - 5;
+			//	lastValuePosY = valuePosY + Math.round(valueFontHeight / 1.2) + indentY + 5;
+			//}
+			//else{
+			//	labelPosY = valuePosY - Math.round(valueFontHeight / 2) + indentY - 5;// + Math.round(labelFontHeight / 2);
+			//	lastValuePosY = valuePosY + Math.round(valueFontHeight / 2) + indentY + 5;//  - Math.round(lastValueFontHeight /2);
+			//}
+			//valuePosY = Math.round(height / 2) + indentY;
 
             dc.drawText(startPosX, labelPosY, labelFont, Ui.loadResource(labelResource), justification);
             dc.drawText(startPosX, valuePosY, valueFont, lapDistanceString, justification);
