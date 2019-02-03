@@ -1,5 +1,6 @@
 <settings>
-       <setting propertyKey="@Properties.showLastLap_prop" title="@Strings.showLastLap_title">
-            <settingConfig type="boolean" />
-        </setting>
+	<setting propertyKey="@Properties.showLastLap_prop"
+		title="@Strings.showLastLap_title">
+		<settingConfig type="boolean" />
+	</setting>
 </settings>

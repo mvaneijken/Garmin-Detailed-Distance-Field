@@ -1,10 +1,13 @@
 <layouts>
-	    <!-- Layout for 218x218 screens  -->
-		    <!-- A generic, 0ed layout. -->
-		    <layout id="MainLayout">
-		        <drawable class="Background" />
-		        <label id="label" x="center" y="center" justification="Gfx.TEXT_JUSTIFY_CENTER" font="Gfx.FONT_TINY" />
-		        <label id="value" x="center" y="center" justification="Gfx.TEXT_JUSTIFY_CENTER" font="Gfx.FONT_NUMBER_MEDIUM" />
-		        <label id="lastvalue" x="center" y="center" justification="Gfx.TEXT_JUSTIFY_CENTER" font="Gfx.FONT_NUMBER_MILD" />
-			</layout>
+	<!-- Layout for 218x218 screens -->
+	<!-- A generic, 0ed layout. -->
+	<layout id="MainLayout">
+		<drawable class="Background" />
+		<label id="label" x="center" y="center"
+			justification="Gfx.TEXT_JUSTIFY_CENTER" font="Gfx.FONT_TINY" />
+		<label id="value" x="center" y="center"
+			justification="Gfx.TEXT_JUSTIFY_CENTER" font="Gfx.FONT_NUMBER_MEDIUM" />
+		<label id="lastvalue" x="center" y="center"
+			justification="Gfx.TEXT_JUSTIFY_CENTER" font="Gfx.FONT_NUMBER_MILD" />
+	</layout>
 </layouts>

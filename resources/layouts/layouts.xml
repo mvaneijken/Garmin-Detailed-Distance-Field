@@ -1,44 +1,62 @@
 <layouts>
-	    <!-- Layout for undefined layout screens  -->
-		    <!-- A generic, centered layout. -->
-		    <layout id="MainLayout">
-		        <drawable class="Background" />
-		        <label id="label" x="center" y="center" justification="Gfx.TEXT_JUSTIFY_CENTER" font="Gfx.FONT_TINY" />
-		        <label id="value" x="center" y="center" justification="Gfx.TEXT_JUSTIFY_CENTER" font="Gfx.FONT_NUMBER_MEDIUM" />
-		        <label id="lastvalue" x="center" y="center" justification="Gfx.TEXT_JUSTIFY_CENTER" font="Gfx.FONT_NUMBER_MILD" />
-			</layout>
-		    <!-- Layouts used for the for the four quadrants. -->
-		    <layout id="TopLeftLayout">
-		        <drawable class="Background" />
-		        <label id="label" x="105" y="40" justification="Gfx.TEXT_JUSTIFY_RIGHT" font="Gfx.FONT_TINY" />
-		        <label id="value" x="105" y="50" justification="Gfx.TEXT_JUSTIFY_RIGHT" font="Gfx.FONT_NUMBER_MEDIUM"/>
-		        <label id="lastvalue" x="105" y="25" justification="Gfx.TEXT_JUSTIFY_RIGHT" font="Gfx.FONT_XTINY" />
-		    </layout>
-		    <layout id="TopRightLayout">
-		        <drawable class="Background" />
-		        <label id="label" x="1" y="40" justification="Gfx.TEXT_JUSTIFY_LEFT" font="Gfx.FONT_TINY" />
-		        <label id="value" x="1" y="50" justification="Gfx.TEXT_JUSTIFY_LEFT" font="Gfx.FONT_NUMBER_MEDIUM" />
-		        <label id="lastvalue" x="2" y="25" justification="Gfx.TEXT_JUSTIFY_LEFT" font="Gfx.FONT_XTINY" />
-		    </layout>
-		    <layout id="RightLayout">
-		        <!-- Also used for bottom right. -->
-		        <drawable class="Background" />
-		        <label id="label" x="1" y="0" justification="Gfx.TEXT_JUSTIFY_LEFT" font="Gfx.FONT_TINY" />
-		        <label id="value" x="1" y="12" justification="Gfx.TEXT_JUSTIFY_LEFT" font="Gfx.FONT_NUMBER_MEDIUM" />
-		        <label id="lastvalue" x="2" y="65" justification="Gfx.TEXT_JUSTIFY_LEFT" font="Gfx.FONT_XTINY" />
-		    </layout>
-		    <layout id="LeftLayout">
-		        <!-- Also used for bottom left. -->
-		        <drawable class="Background" />
-		        <label id="label" x="117" y="0" justification="Gfx.TEXT_JUSTIFY_RIGHT" font="Gfx.FONT_TINY" />
-		        <label id="value" x="117" y="12" justification="Gfx.TEXT_JUSTIFY_RIGHT" font="Gfx.FONT_NUMBER_MEDIUM" />
-		        <label id="lastvalue" x="117" y="65" justification="Gfx.TEXT_JUSTIFY_RIGHT" font="Gfx.FONT_XTINY" />
-		    </layout>
-		    <layout id="CenteredLayout">
-		        <!-- Also used for bottom left. -->
-		        <drawable class="Background" />
-		        <label id="label" x="0" y="-19" justification="Gfx.TEXT_JUSTIFY_CENTER" font="Gfx.FONT_TINY" />
-		        <label id="value" x="0" y="10" justification="Gfx.TEXT_JUSTIFY_CENTER" font="Gfx.FONT_NUMBER_MEDIUM" />
-		        <label id="lastvalue" x="0" y="45" justification="Gfx.TEXT_JUSTIFY_CENTER" font="Gfx.FONT_XTINY" />
-		    </layout>
+	<!-- Layout for undefined layout screens -->
+	<!-- A generic, centered layout. -->
+	<layout id="MainLayout">
+		<drawable class="Background" />
+		<label id="label" x="center" y="center"
+			justification="Gfx.TEXT_JUSTIFY_CENTER" font="Gfx.FONT_TINY" />
+		<label id="value" x="center" y="center"
+			justification="Gfx.TEXT_JUSTIFY_CENTER" font="Gfx.FONT_NUMBER_MEDIUM" />
+		<label id="lastvalue" x="center" y="center"
+			justification="Gfx.TEXT_JUSTIFY_CENTER" font="Gfx.FONT_NUMBER_MILD" />
+	</layout>
+	<!-- Layouts used for the for the four quadrants. -->
+	<layout id="TopLeftLayout">
+		<drawable class="Background" />
+		<label id="label" x="105" y="40"
+			justification="Gfx.TEXT_JUSTIFY_RIGHT" font="Gfx.FONT_TINY" />
+		<label id="value" x="105" y="50"
+			justification="Gfx.TEXT_JUSTIFY_RIGHT" font="Gfx.FONT_NUMBER_MEDIUM" />
+		<label id="lastvalue" x="105" y="25"
+			justification="Gfx.TEXT_JUSTIFY_RIGHT" font="Gfx.FONT_XTINY" />
+	</layout>
+	<layout id="TopRightLayout">
+		<drawable class="Background" />
+		<label id="label" x="1" y="40"
+			justification="Gfx.TEXT_JUSTIFY_LEFT" font="Gfx.FONT_TINY" />
+		<label id="value" x="1" y="50"
+			justification="Gfx.TEXT_JUSTIFY_LEFT" font="Gfx.FONT_NUMBER_MEDIUM" />
+		<label id="lastvalue" x="2" y="25"
+			justification="Gfx.TEXT_JUSTIFY_LEFT" font="Gfx.FONT_XTINY" />
+	</layout>
+	<layout id="RightLayout">
+		<!-- Also used for bottom right. -->
+		<drawable class="Background" />
+		<label id="label" x="1" y="0"
+			justification="Gfx.TEXT_JUSTIFY_LEFT" font="Gfx.FONT_TINY" />
+		<label id="value" x="1" y="12"
+			justification="Gfx.TEXT_JUSTIFY_LEFT" font="Gfx.FONT_NUMBER_MEDIUM" />
+		<label id="lastvalue" x="2" y="65"
+			justification="Gfx.TEXT_JUSTIFY_LEFT" font="Gfx.FONT_XTINY" />
+	</layout>
+	<layout id="LeftLayout">
+		<!-- Also used for bottom left. -->
+		<drawable class="Background" />
+		<label id="label" x="117" y="0"
+			justification="Gfx.TEXT_JUSTIFY_RIGHT" font="Gfx.FONT_TINY" />
+		<label id="value" x="117" y="12"
+			justification="Gfx.TEXT_JUSTIFY_RIGHT" font="Gfx.FONT_NUMBER_MEDIUM" />
+		<label id="lastvalue" x="117" y="65"
+			justification="Gfx.TEXT_JUSTIFY_RIGHT" font="Gfx.FONT_XTINY" />
+	</layout>
+	<layout id="CenteredLayout">
+		<!-- Also used for bottom left. -->
+		<drawable class="Background" />
+		<label id="label" x="0" y="-19"
+			justification="Gfx.TEXT_JUSTIFY_CENTER" font="Gfx.FONT_TINY" />
+		<label id="value" x="0" y="10"
+			justification="Gfx.TEXT_JUSTIFY_CENTER" font="Gfx.FONT_NUMBER_MEDIUM" />
+		<label id="lastvalue" x="0" y="45"
+			justification="Gfx.TEXT_JUSTIFY_CENTER" font="Gfx.FONT_XTINY" />
+	</layout>
 </layouts>

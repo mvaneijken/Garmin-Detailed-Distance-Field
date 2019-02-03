@@ -1,6 +1,6 @@
 <strings>
-    <string id="AppName">310XT Lap Distance</string>
-    <string id="label">Rnd Afst</string>
-    <string id="lastlaplabel">Lr Afst</string>
+	<string id="AppName">310XT Lap Distance</string>
+	<string id="label">Rnd Afst</string>
+	<string id="lastlaplabel">Lr Afst</string>
 	<string id="showLastLap_title">Afstand van laatste ronde weergeven</string>
 </strings>
