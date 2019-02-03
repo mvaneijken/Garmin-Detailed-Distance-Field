@@ -1,0 +1,6 @@
+<strings>
+    <string id="AppName">310XT Lap Distance</string>
+    <string id="label">LAP DIST</string>
+    <string id="lastlaplabel">LL DST</string>
+	<string id="showLastLap_title">Show previous lap distance</string>
+</strings>
