@@ -85,10 +85,10 @@ class XTDetailedDistanceDataFieldView extends Ui.DataField {
 		var startPosX = getStartPosX(width);
 
 		//For devices where Gfx.FONT_XTINY has the same height as Gfx.FONT_TINY, use FONT_TINY.
-		if (Gfx.getFontHeight(Gfx.FONT_TINY) == Gfx.getFontHeight(Gfx.FONT_XTINY)){
-			labelFont =  Gfx.FONT_TINY;
-			labelFontHeight = Gfx.getFontHeight(labelFont);
-		} 
+		//if (Gfx.getFontHeight(Gfx.FONT_TINY) == Gfx.getFontHeight(Gfx.FONT_XTINY)){
+	//		labelFont =  Gfx.FONT_TINY;
+	//		labelFontHeight = Gfx.getFontHeight(labelFont);
+	//	} 
 				
         // do layout
         if (isSingleFieldLayout()) {
@@ -121,8 +121,8 @@ class XTDetailedDistanceDataFieldView extends Ui.DataField {
 			valueFontHeight = Gfx.getFontHeight(valueFont);
 
 			
-			labelPosY = valuePosY - Math.round(valueFontHeight);
-			lastValuePosY = valuePosY + Math.round(valueFontHeight);// + indentY + 5;//  - Math.round(lastValueFontHeight /2);
+			labelPosY = valuePosY - (valueFontHeight );
+			lastValuePosY = valuePosY + (valueFontHeight );// + indentY + 5;//  - Math.round(lastValueFontHeight /2);
 						
 			
 			// Somehow the FR935 like devices do not calculate the fontheight correctly, therefor a different calculation is used to place the label and last value.
