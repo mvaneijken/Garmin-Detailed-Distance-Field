@@ -21,11 +21,14 @@ class XTDetailedDistanceDataFieldView extends Ui.DataField {
     hidden var version = deviceSettings.monkeyVersion;
 	hidden var versionString = Lang.format("$1$.$2$.$3$", version);
 	hidden var majorversionString = Lang.format("$1$", version);
+	hidden var devicePartNumber = null;
 
     function initialize() {
         DataField.initialize();
         showLastLap = getShowLastLapProp();
 		screenHeigth = deviceSettings.getDeviceSettings().screenHeight;
+		devicePartNumber = getDevicePartNumber();
+	
     }
 
     // Set your layout here. Anytime the size of obscurity of
@@ -91,23 +94,78 @@ class XTDetailedDistanceDataFieldView extends Ui.DataField {
 	//	} 
 				
         // do layout
+			//Used deviceID list:
+			//fenix3 = "006-B2050-00"
+			//fenix3_hr = "006-B2413-00"
+			//fenixchronos = "006-B2432-00"
+			//fenix5s = "006-B2544-00"
+			//fenix5x = "006-B2604-00"	
+			//fr935 = "006-B2691-00" 
+			//fenix5 = "006-B2697-00"
+			//vivoactive3 = "006-B2700-00"
+			//fr645	= "006-B2886-00"
+			//fr645m = "006-B2888-00"
+			//fenix5splus = "006-B2900-00"						
+			//vivoactive3m = "006-B2988-00"
+		   	//vivoactive3mlte = "006-B3066-00"
+		   	//fenix5plus = "006-B3110-00"
+			//fenix5xplus = "006-B3111-00"	
+
+			//Not used deviceID list:
+			//approachs60 = "006-B2656-00"
+			//d2bravo = "006-B2262-00"
+			//d2bravo_titanium = "006-B2547-00"
+			//d2charlie = "006-B2819-00"
+			//d2delta = "006-B3197-00"
+			//d2deltapx = "006-B3198-00"
+			//d2deltas = "006-B3196-00"
+			//descentmk1 = "006-B2859-00"
+			//edge1030 = "006-B2713-00"
+			//edge1030bontrager = "006-B3095-00"
+			//edge130 = "006-B2909-00"
+			//edge520plus = "006-B3112-00"
+			//edge820 = "006-B2530-00"
+			//edgeexplore = "006-B3011-00"
+			//edge_1000 = "006-B1836-00"
+			//edge_520 = "006-B2067-00"
+			//epix = "006-B1988-00"
+			
+			//gpsmap66 = "006-B3028-00"
+			//oregon7xx = "006-B2512-00"
+			//rino7xx = "006-B2444-00"
+			//vivoactive_hr = "006-B2337-00"
+
+		Sys.println(devicePartNumber);
         if (isSingleFieldLayout()) {
 			valueFont = Gfx.FONT_NUMBER_THAI_HOT;
 			valueFontHeight = Gfx.getFontHeight(valueFont);
 			valuePosY = Math.round(height / 2) + indentY;
-			
-			// Somehow the FR935 like devices do not calculate the fontheight correctly, therefor a different calculation is used to place the label and last value.
-			if (screenHeigth > 218){
-				labelPosY = valuePosY - Math.round(valueFontHeight / 1.5) + indentY - 5;
-				lastValuePosY = valuePosY + Math.round(valueFontHeight / 1.5) + indentY + 5;
+	
+			if (
+				devicePartNumber.equals("006-B2432-00") //fenixchronos 
+				|devicePartNumber.equals("006-B2544-00") //fenix5s
+				|devicePartNumber.equals("006-B2604-00") //fenix5x 
+				|devicePartNumber.equals("006-B2691-00") //fr935 
+				|devicePartNumber.equals("006-B2697-00") //fenix5 
+				|devicePartNumber.equals("006-B2886-00") //fr645	
+				|devicePartNumber.equals("006-B2888-00") //fr645m
+				|devicePartNumber.equals("006-B2900-00") //fenix5splus	
+				|devicePartNumber.equals("006-B3110-00") //fenix5plus
+				|devicePartNumber.equals("006-B3111-00") //fenix5xplus	 															
+				){
+					labelPosY = valuePosY - Math.round(valueFontHeight / 1.5) + indentY - 5;
+					lastValuePosY = valuePosY + Math.round(valueFontHeight / 1.5) + indentY + 5;
+					Sys.println("Single If ");
 			}
-			else if ((screenHeigth > 67) and (screenHeigth < 70)){
-				labelPosY = valuePosY - Math.round(valueFontHeight / 1.5) + indentY - 5;
-				lastValuePosY = valuePosY + Math.round(valueFontHeight / 1.5) + indentY + 5;
-			}
+	//		else if ((screenHeigth > 67) and (screenHeigth < 70)){
+		//		labelPosY = valuePosY - Math.round(valueFontHeight / 1.5) + indentY - 5;
+	//			lastValuePosY = valuePosY + Math.round(valueFontHeight / 1.5) + indentY + 5;
+	//			Sys.println("Tweede");
+	//		}
 			else {
 				labelPosY = valuePosY - Math.round(valueFontHeight / 2) + Math.round(labelFontHeight / 2) + indentY - 5;
 				lastValuePosY = valuePosY + Math.round(valueFontHeight / 2)  - Math.round(lastValueFontHeight /2) + indentY + 5;
+				Sys.println("Single Else ");
 			}
             dc.drawText(startPosX, labelPosY, labelFont, Ui.loadResource(labelResource), justification);
             dc.drawText(startPosX, valuePosY, valueFont, lapDistanceString, justification);
@@ -119,23 +177,55 @@ class XTDetailedDistanceDataFieldView extends Ui.DataField {
         else {
         	valueFont = Gfx.FONT_NUMBER_MILD;
 			valueFontHeight = Gfx.getFontHeight(valueFont);
-
 			
 			labelPosY = valuePosY - (valueFontHeight );
 			lastValuePosY = valuePosY + (valueFontHeight );// + indentY + 5;//  - Math.round(lastValueFontHeight /2);
-						
 			
-			// Somehow the FR935 like devices do not calculate the fontheight correctly, therefor a different calculation is used to place the label and last value.
-					
-			//if (screenHeigth > 218){
-			//	labelPosY = valuePosY - Math.round(valueFontHeight / 1.2) + indentY - 5;
-			//	lastValuePosY = valuePosY + Math.round(valueFontHeight / 1.2) + indentY + 5;
-			//}
-			//else{
-			//	labelPosY = valuePosY - Math.round(valueFontHeight / 2) + indentY - 5;// + Math.round(labelFontHeight / 2);
-			//	lastValuePosY = valuePosY + Math.round(valueFontHeight / 2) + indentY + 5;//  - Math.round(lastValueFontHeight /2);
-			//}
-			//valuePosY = Math.round(height / 2) + indentY;
+			if 	(
+				devicePartNumber.equals("006-B2432-00") //fenixchronos 
+				|devicePartNumber.equals("006-B2544-00") //fenix5s	
+				|devicePartNumber.equals("006-B2604-00") //fenix5x 
+				|devicePartNumber.equals("006-B2691-00") //fr935 
+				|devicePartNumber.equals("006-B2697-00") //fenix5 
+				|devicePartNumber.equals("006-B2886-00") //fr645	
+				|devicePartNumber.equals("006-B2888-00") //fr645m
+				|devicePartNumber.equals("006-B2900-00") //fenix5splus	
+				|devicePartNumber.equals("006-B3110-00") //fenix5plus
+				|devicePartNumber.equals("006-B3111-00") //fenix5xplus						
+				){
+			   		labelPosY = valuePosY - Math.round(valueFontHeight / 1.2) + indentY - 5;
+					lastValuePosY = valuePosY + Math.round(valueFontHeight / 1.2) + indentY + 5;
+					Sys.println("Multi if " +  DataField.getObscurityFlags()  + " " + height);
+	   		} 			
+			else {	
+				if ((height > 67) && !(
+						devicePartNumber.equals("006-B2050-00") //fenix3
+						|devicePartNumber.equals("006-B2413-00") //fenix3_hr
+						|devicePartNumber.equals("006-B2700-00") //vivoactive3
+						|devicePartNumber.equals("006-B2988-00") //vivoactive3m
+		   				|devicePartNumber.equals("006-B3066-00") //vivoactive3mlte					
+						)){
+							valueFont = Gfx.FONT_NUMBER_MEDIUM;
+							labelPosY = valuePosY - Math.round(valueFontHeight / 1.5) + indentY - 5;
+							lastValuePosY = valuePosY + Math.round(valueFontHeight / 1.5) + indentY + 5;
+							Sys.println("Multi else 1 " +  DataField.getObscurityFlags() + " " + height);
+					}
+				else if ((height > 67) && (
+							devicePartNumber.equals("006-B2050-00") //fenix3
+							|devicePartNumber.equals("006-B2413-00") //fenix3_hr
+							)){
+						valueFont = Gfx.FONT_NUMBER_MEDIUM;
+						labelPosY = valuePosY - Math.round(valueFontHeight / 1.5) + indentY - 5;
+						lastValuePosY = valuePosY + Math.round(valueFontHeight / 1.5) + indentY + 7;
+						Sys.println("Multi else 2 " +  DataField.getObscurityFlags() + " " + height);
+				}
+				else{
+					labelPosY = valuePosY - Math.round(valueFontHeight / 2) + indentY - 5;// + Math.round(labelFontHeight / 2);
+					lastValuePosY = valuePosY + Math.round(valueFontHeight / 2) + indentY + 5;//  - Math.round(lastValueFontHeight /2);
+					Sys.println("Multi else 3 " +  DataField.getObscurityFlags() + " " + height);
+					}
+			}
+			valuePosY = Math.round(height / 2) + indentY;
 
             dc.drawText(startPosX, labelPosY, labelFont, Ui.loadResource(labelResource), justification);
             dc.drawText(startPosX, valuePosY, valueFont, lapDistanceString, justification);
@@ -341,4 +431,11 @@ class XTDetailedDistanceDataFieldView extends Ui.DataField {
 			lastvalue.setText(lastLapDistanceString);
 		}
     }
+
+	function getDevicePartNumber() {
+		var deviceSettings = Sys.getDeviceSettings();
+		// device part numbers come from ${SDKROOT}/bin/devices.xml
+		var partNumber = deviceSettings.partNumber;
+		return partNumber;
+	}
 }
