@@ -1,6 +1,28 @@
 <settings>
 	<setting propertyKey="@Properties.showLastLap_prop"
-		title="@Strings.showLastLap_title">
+		title="@Strings.showLastLap_prop">
 		<settingConfig type="boolean" />
 	</setting>
+	
+	<setting propertyKey="@Properties.zerotoone"
+		title="@Strings.zerotoone"
+		prompt="@Strings.digits">
+        <settingConfig type="numeric" required="true" min="0" max="3" />
+	</setting>
+	<setting propertyKey="@Properties.onetoten"
+		title="@Strings.onetoten"
+		prompt="@Strings.digits">
+        <settingConfig type="numeric" required="true" min="0" max="3" />
+	</setting>
+	<setting propertyKey="@Properties.tentohundred"
+		title="@Strings.tentohundred"
+		prompt="@Strings.digits">
+        <settingConfig type="numeric" required="true" min="0" max="3" />
+	</setting>
+	<setting propertyKey="@Properties.hundredonwards"
+		title="@Strings.hundredonwards"
+		prompt="@Strings.digits">
+        <settingConfig type="numeric" required="true" min="0" max="3" />
+	</setting>
+				
 </settings>

@@ -1,3 +1,7 @@
 <properties>
 	<property id="showLastLap_prop" type="boolean">true</property>
+	<property id="zerotoone" type="number">3</property>
+	<property id="onetoten" type="number">2</property>
+	<property id="tentohundred" type="number">2</property>
+	<property id="hundredonwards" type="number">1</property>
 </properties>

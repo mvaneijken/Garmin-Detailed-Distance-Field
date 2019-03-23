@@ -2,5 +2,10 @@
 	<string id="AppName">310XT Lap Distance</string>
 	<string id="label">LAP DIST</string>
 	<string id="lastlaplabel">LL DST</string>
-	<string id="showLastLap_title">Show previous lap distance</string>
+	<string id="showLastLap_prop">Show previous lap distance</string>
+	<string id="digits">Select the number of digits</string>
+	<string id="zerotoone">Digits from 0 to 1 km or mile</string>
+	<string id="onetoten">Digits from 1 to 10 km or mile</string>
+	<string id="tentohundred">Digits from 10 to 100 km or mile</string>
+	<string id="hundredonwards">Digits from 100 km or mile</string>
 </strings>
