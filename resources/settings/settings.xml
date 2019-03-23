@@ -3,7 +3,6 @@
 		title="@Strings.showLastLap_prop">
 		<settingConfig type="boolean" />
 	</setting>
-	
 	<setting propertyKey="@Properties.zerotoone"
 		title="@Strings.zerotoone"
 		prompt="@Strings.digits">
@@ -24,5 +23,4 @@
 		prompt="@Strings.digits">
         <settingConfig type="numeric" required="true" min="0" max="3" />
 	</setting>
-				
 </settings>
