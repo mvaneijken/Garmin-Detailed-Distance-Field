@@ -129,6 +129,9 @@ class XTDetailedDistanceDataFieldView extends Ui.DataField {
 		   	//vivoactive3mlte = "006-B3066-00"
 		   	//fenix5plus = "006-B3110-00"
 			//fenix5xplus = "006-B3111-00"	
+			//fr245 = "006-B3076-00"
+			//fr245music = "006-B3077-00"
+			//fr945 = "006-B3113-00"
 
 			//Not used deviceID list:
 			//approachs60 = "006-B2656-00"
@@ -153,6 +156,7 @@ class XTDetailedDistanceDataFieldView extends Ui.DataField {
 			//oregon7xx = "006-B2512-00"
 			//rino7xx = "006-B2444-00"
 			//vivoactive_hr = "006-B2337-00"
+			//marqathlete = "006-B3251-00"
 
 			//Sys.println(devicePartNumber);
         if (isSingleFieldLayout()) {
@@ -170,7 +174,10 @@ class XTDetailedDistanceDataFieldView extends Ui.DataField {
 				|devicePartNumber.equals("006-B2888-00") //fr645m
 				|devicePartNumber.equals("006-B2900-00") //fenix5splus	
 				|devicePartNumber.equals("006-B3110-00") //fenix5plus
-				|devicePartNumber.equals("006-B3111-00") //fenix5xplus	 															
+				|devicePartNumber.equals("006-B3111-00") //fenix5xplus	 	
+				|devicePartNumber.equals("006-B3076-00") //fr245
+				|devicePartNumber.equals("006-B3077-00") //fr245music
+				 	
 				){
 					labelPosY = valuePosY - Math.round(valueFontHeight / 1.5) + indentY - 5;
 					lastValuePosY = valuePosY + Math.round(valueFontHeight / 1.5) + indentY + 5;
@@ -205,7 +212,7 @@ class XTDetailedDistanceDataFieldView extends Ui.DataField {
 				|devicePartNumber.equals("006-B2888-00") //fr645m
 				|devicePartNumber.equals("006-B2900-00") //fenix5splus	
 				|devicePartNumber.equals("006-B3110-00") //fenix5plus
-				|devicePartNumber.equals("006-B3111-00") //fenix5xplus						
+				|devicePartNumber.equals("006-B3111-00") //fenix5xplus
 				){
 			   		labelPosY = valuePosY - Math.round(valueFontHeight / 1.2) + indentY - 5;
 					lastValuePosY = valuePosY + Math.round(valueFontHeight / 1.2) + indentY + 5;
@@ -218,7 +225,11 @@ class XTDetailedDistanceDataFieldView extends Ui.DataField {
 						|devicePartNumber.equals("006-B2413-00") //fenix3_hr
 						|devicePartNumber.equals("006-B2700-00") //vivoactive3
 						|devicePartNumber.equals("006-B2988-00") //vivoactive3m
-		   				|devicePartNumber.equals("006-B3066-00") //vivoactive3mlte					
+		   				|devicePartNumber.equals("006-B3066-00") //vivoactive3mlte		
+						|devicePartNumber.equals("006-B3076-00") //fr245
+						|devicePartNumber.equals("006-B3077-00") //fr245music
+						|devicePartNumber.equals("006-B3113-00") //fr945
+						
 						)){
 							valueFont = Gfx.FONT_NUMBER_MEDIUM;
 							labelPosY = valuePosY - Math.round(valueFontHeight / 1.5) + indentY - 5;
