@@ -136,24 +136,24 @@ class XTDetailedDistanceDataFieldView extends Ui.DataField {
 
 			//Top left or right
 			var obscurityFlags = DataField.getObscurityFlags();
-			writeDebug("obscurityFlags = " + obscurityFlags );
 			var valuePosY = height / 2; 
 			var labelPosY = valuePosY - ((valueFontHeight/2) + (labelFontHeight/2));
 			var lastValuePosY = valuePosY + ((valueFontHeight/2) + (lastValueFontHeight/2));
 			
 			if ((obscurityFlags == 9) or (obscurityFlags == 12)){
-				writeDebug("Top");
+				writeDebug("Top Left/Right location");
 				valuePosY = height / 3; 
 				labelPosY = valuePosY - ((valueFontHeight/2) + (labelFontHeight/2));
 				lastValuePosY = valuePosY + ((valueFontHeight/2) + (lastValueFontHeight/2));			
 			}
 			if ((obscurityFlags == 3) or (obscurityFlags == 6)){
-				writeDebug("Bottom");
+				writeDebug("Bottom Left/Right location");
 				lastValuePosY = height - (lastValueFontHeight/2);	
 				valuePosY = lastValuePosY - ((valueFontHeight/2) + (lastValueFontHeight/2)); 
 				labelPosY = valuePosY - ((valueFontHeight/2) + (labelFontHeight/2));
 			}
-	/*		if ((obscurityFlags == 4)){
+			/*		
+			if ((obscurityFlags == 4)){
 				justification = Gfx.TEXT_JUSTIFY_RIGHT | Gfx.TEXT_JUSTIFY_VCENTER;
 				justificationlvalue = Gfx.TEXT_JUSTIFY_RIGHT | Gfx.TEXT_JUSTIFY_VCENTER;
 			}
