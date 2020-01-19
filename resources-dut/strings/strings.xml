@@ -1,7 +1,7 @@
 <strings>
 	<string id="AppName">Gedetailleerde Rondeafstand (aka 310XT Datafield)</string>
-	<string id="label">RND AFST</string>
-	<string id="lastlaplabel">LR AFST</string>
+	<string id="label">Rnd Afst</string>
+	<string id="lastlaplabel">LR</string>
 	<string id="showLastLap_prop">Vorige ronde weergeven</string>
  	<string id="digits">Configureer het aantal decimalen</string>
 	<string id="zerotoone">Decimalen van 0 tot 1 km of mijl (0 t/m 3)</string>

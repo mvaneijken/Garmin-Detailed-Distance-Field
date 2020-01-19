@@ -1,7 +1,7 @@
 <strings>
 	<string id="AppName">Detailed Lap Distance (aka 310XT Datafield)</string>
-	<string id="label">LAP DIST</string>
-	<string id="lastlaplabel">LL DST</string>
+	<string id="label">Lap Dist</string>
+	<string id="lastlaplabel">LL</string>
 	<string id="showLastLap_prop">Show previous lap distance</string>
 	<string id="digits">Configure the decimals</string>
 	<string id="zerotoone">Digits from 0 to 1 km or mile (0 to 3)</string>
