@@ -23,4 +23,18 @@
 		prompt="@Strings.digits">
         <settingConfig type="numeric" required="true" min="0" max="3" />
 	</setting>
+	<setting propertyKey="@Properties.overridesizeing"
+		title="@Strings.overridesizeing">
+        <settingConfig type="boolean" required="false" />
+	</setting>	
+	<setting propertyKey="@Properties.heightoversizeoverride"
+		title="@Strings.heightoversizeoverride"
+		prompt="@Strings.oversizeoverridepromptvalue">
+        <settingConfig type="numeric" required="false" min="0.5" max="1.5" />
+	</setting>	
+	<setting propertyKey="@Properties.widthoversizeoverride"
+		title="@Strings.widthoversizeoverride"
+		prompt="@Strings.oversizeoverridepromptvalue">
+        <settingConfig type="numeric" required="false" min="0.5" max="1.5" />
+	</setting>
 </settings>

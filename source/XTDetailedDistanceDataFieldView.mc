@@ -34,12 +34,16 @@ class XTDetailedDistanceDataFieldView extends Ui.DataField {
 	hidden var valueFont = Gfx.FONT_NUMBER_THAI_HOT;
 	hidden var labelFont =  Gfx.FONT_XTINY;
 	hidden var lastValueFont =  Gfx.FONT_XTINY;
-	hidden var debugMode = false;	
+	hidden var width = 0;
+	hidden var height = 0;
+	hidden var overrideSizeing = App.getApp().getProperty("overridesizeing");
+	hidden var debugMode = true;	
 
     function initialize() {
+		writeDebug("-------------- initialize --------------");
+   
         DataField.initialize();
-    	if (debugMode == true) {showLastLap = true;}  
-		else{showLastLap = getShowLastLapProp();}
+ 		showLastLap = getShowLastLapProp();
 		screenHeigth = deviceSettings.getDeviceSettings().screenHeight;
 		devicePartNumber = getDevicePartNumber();
     	//Digits
@@ -75,8 +79,7 @@ class XTDetailedDistanceDataFieldView extends Ui.DataField {
     function onUpdate(dc) {
         
 		// Get showLastLapp value
-    	if (debugMode == true) {showLastLap = true;}  
-		else{showLastLap = getShowLastLapProp();}  
+		showLastLap = getShowLastLapProp();  
 
     	//Digits
 		zerotooneDigits = App.getApp().getProperty("zerotoone");
@@ -88,8 +91,8 @@ class XTDetailedDistanceDataFieldView extends Ui.DataField {
 			
 		var lapDistanceString = setDistStr(currentLapDistance);		
 	    
-     	var width = dc.getWidth();
-        var height = dc.getHeight();
+     	width = dc.getWidth();
+        height = dc.getHeight();
 
         var backgroundColor = getBackgroundColor();
         // set background color
@@ -111,6 +114,7 @@ class XTDetailedDistanceDataFieldView extends Ui.DataField {
 		var startPosX = getStartPosX(width);
 
 		if (isSingleFieldLayout()) {
+			writeDebug("**************");		
 			valueFont = Gfx.FONT_NUMBER_THAI_HOT;
 			valueFontHeight = Gfx.getFontHeight(valueFont);
 			valueFontDimentions = dc.getTextDimensions(lapDistanceString,valueFont);	
@@ -120,16 +124,18 @@ class XTDetailedDistanceDataFieldView extends Ui.DataField {
 			var lastValuePosY = valuePosY + ((valueFontHeight/2) + (lastValueFontHeight/2));
 			
             dc.drawText(startPosX, labelPosY, labelFont, Ui.loadResource(labelResource), justification);
-			writeDebug("labelPosY = " + labelPosY);
+			writeDebug("isSingleFieldLayout - labelPosY = " + labelPosY);
             dc.drawText(startPosX, valuePosY, valueFont, lapDistanceString, justification);
-			writeDebug("valuePosY = "+ valuePosY);
+			writeDebug("isSingleFieldLayout - valuePosY = "+ valuePosY);
     		if (showLastLap == true){
 				lastLapDistanceString = Ui.loadResource(lastLabLabelResource) + " " + setDistStr(lastLapDistance);
-				writeDebug("lastValuePosY = " + lastValuePosY);
+				writeDebug("isSingleFieldLayout - lastValuePosY = " + lastValuePosY);
             	dc.drawText(startPosX, lastValuePosY, lastValueFont, lastLapDistanceString, justificationlvalue);
 			}
+			writeDebug("**************");
         } 
         else {
+        	writeDebug("**************");
         	valueFont = getValueFont(dc,lapDistanceString);
 			valueFontHeight = Gfx.getFontHeight(valueFont);
 			valueFontDimentions = dc.getTextDimensions(lapDistanceString,valueFont);
@@ -140,65 +146,58 @@ class XTDetailedDistanceDataFieldView extends Ui.DataField {
 			var labelPosY = valuePosY - ((valueFontHeight/2) + (labelFontHeight/2));
 			var lastValuePosY = valuePosY + ((valueFontHeight/2) + (lastValueFontHeight/2));
 			
-			if ((obscurityFlags == 9) or (obscurityFlags == 12)){
-				writeDebug("Top Left/Right location");
-				valuePosY = height / 3; 
-				labelPosY = valuePosY - ((valueFontHeight/2) + (labelFontHeight/2));
-				lastValuePosY = valuePosY + ((valueFontHeight/2) + (lastValueFontHeight/2));			
-			}
 			if ((obscurityFlags == 3) or (obscurityFlags == 6)){
-				writeDebug("Bottom Left/Right location");
-				lastValuePosY = height - (lastValueFontHeight/2);	
+				writeDebug("isMultiFieldLayout - Top Left/Right location");
+				lastValuePosY = height - (lastValueFontHeight/2);
+				if(showLastLap != true){
+					lastValuePosY = 0;
+				}
 				valuePosY = lastValuePosY - ((valueFontHeight/2) + (lastValueFontHeight/2)); 
 				labelPosY = valuePosY - ((valueFontHeight/2) + (labelFontHeight/2));
 			}
-			/*		
-			if ((obscurityFlags == 4)){
-				justification = Gfx.TEXT_JUSTIFY_RIGHT | Gfx.TEXT_JUSTIFY_VCENTER;
-				justificationlvalue = Gfx.TEXT_JUSTIFY_RIGHT | Gfx.TEXT_JUSTIFY_VCENTER;
+			if ((obscurityFlags == 9) or (obscurityFlags == 12)){
+				writeDebug("isMultiFieldLayout - Bottom Left/Right location");
+				labelPosY = 0 + (labelFontHeight/2);
+				valuePosY = labelPosY + ((valueFontHeight/2) + (labelFontHeight/2));
+				lastValuePosY = valuePosY + ((valueFontHeight/2) + (lastValueFontHeight/2));
 			}
-			if ((obscurityFlags == 8)){
-				justification = Gfx.TEXT_JUSTIFY_LEFT | Gfx.TEXT_JUSTIFY_VCENTER;
-				justificationlvalue = Gfx.TEXT_JUSTIFY_LEFT | Gfx.TEXT_JUSTIFY_VCENTER;
-			}
-			*/				
 		
             dc.drawText(startPosX, labelPosY, labelFont, Ui.loadResource(labelResource), justification);
-			writeDebug("labelPosY = "+ labelPosY);
+			writeDebug("isMultiFieldLayout - labelPosY = "+ labelPosY);
             dc.drawText(startPosX, valuePosY, valueFont, lapDistanceString, justification);
-			writeDebug("valuePosY = "+ valuePosY);
+			writeDebug("isMultiFieldLayout - valuePosY = "+ valuePosY);
     		if (showLastLap == true){
 				lastLapDistanceString = Ui.loadResource(lastLabLabelResource) + " " + setDistStr(lastLapDistance);
-				writeDebug("lastValuePosY = " + lastValuePosY);
+				writeDebug("isMultiFieldLayout - lastValuePosY = " + lastValuePosY);
             	dc.drawText(startPosX, lastValuePosY, lastValueFont, lastLapDistanceString, justificationlvalue);
 			}
+			writeDebug("**************");
         }
 		//Debug info
 		if (debugMode == true) {
-				writeDebug("--------------");
-				writeDebug("width: " + width);
-				writeDebug("height: " + height);
-				writeDebug("backgroundColor: " + backgroundColor);
-				writeDebug("valueFont: " + valueFont);
-				writeDebug("valueFontHeight: " + valueFontHeight);
-				writeDebug("valueFontDimentions: " + valueFontDimentions);
-				writeDebug("valuePosY: " + valuePosY);
-				writeDebug("labelFont: " + labelFont);
-				writeDebug("labelFontHeight: " + labelFontHeight);
-				writeDebug("labelFontDimentions: " + labelFontDimentions);
-				writeDebug("labelPosY: " + labelPosY);
-				writeDebug("lastValueFont: " + lastValueFont);
-				writeDebug("lastValueFontHeight: " + lastValueFontHeight);
-				writeDebug("lastValueFontDimentions: " + lastValueFontDimentions);
-				writeDebug("lastValuePosY: " + lastValuePosY);
-				writeDebug("combinedFontHeight: " + combinedFontHeight);
-				writeDebug("justification: " + justification);
-				writeDebug("justificationlvalue: " + justificationlvalue);
-				writeDebug("startPosX: " + startPosX);
- 				writeDebug("devicePartNumber: " + devicePartNumber);
- 				writeDebug("getObscurityFlags: " + DataField.getObscurityFlags());
-				writeDebug("justification: " + getTextJustification());
- 				writeDebug("--------------");												 
+				writeDebug("debug info - width: " + width);
+				writeDebug("debug info - height: " + height);
+				writeDebug("debug info - backgroundColor: " + backgroundColor);
+				writeDebug("debug info - valueFont: " + valueFont);
+				writeDebug("debug info - valueFontHeight: " + valueFontHeight);
+				writeDebug("debug info - valueFontDimentions: " + valueFontDimentions);
+				writeDebug("debug info - valuePosY: " + valuePosY);
+				writeDebug("debug info - labelFont: " + labelFont);
+				writeDebug("debug info - labelFontHeight: " + labelFontHeight);
+				writeDebug("debug info - labelFontDimentions: " + labelFontDimentions);
+				writeDebug("debug info - labelPosY: " + labelPosY);
+				writeDebug("debug info - lastValueFont: " + lastValueFont);
+				writeDebug("debug info - lastValueFontHeight: " + lastValueFontHeight);
+				writeDebug("debug info - lastValueFontDimentions: " + lastValueFontDimentions);
+				writeDebug("debug info - lastValuePosY: " + lastValuePosY);
+				writeDebug("debug info - combinedFontHeight: " + combinedFontHeight);
+				writeDebug("debug info - justification: " + justification);
+				writeDebug("debug info - justificationlvalue: " + justificationlvalue);
+				writeDebug("debug info - startPosX: " + startPosX);
+ 				writeDebug("debug info - devicePartNumber: " + devicePartNumber);
+ 				writeDebug("debug info - getObscurityFlags: " + DataField.getObscurityFlags());
+				writeDebug("debug info - justification: " + getTextJustification());
+ 				writeDebug("-------------- end --------------");												 
 		}
     }
     
@@ -209,11 +208,11 @@ class XTDetailedDistanceDataFieldView extends Ui.DataField {
     function getTextJustification() {
     	var justification;
         var textCenter = Gfx.TEXT_JUSTIFY_CENTER | Gfx.TEXT_JUSTIFY_VCENTER;
-        writeDebug("textCenter = " + textCenter);
+        writeDebug("getTextJustification - textCenter = " + textCenter);
         var textRight = Gfx.TEXT_JUSTIFY_RIGHT | Gfx.TEXT_JUSTIFY_VCENTER;
-        writeDebug("textRight = " + textRight);
+        writeDebug("getTextJustification - textRight = " + textRight);
         var textLeft = Gfx.TEXT_JUSTIFY_LEFT | Gfx.TEXT_JUSTIFY_VCENTER;
-        writeDebug("textLeft = " + textLeft);        
+        writeDebug("getTextJustification - textLeft = " + textLeft);        
 	    if ( (DataField.getObscurityFlags() == 12) or (DataField.getObscurityFlags() == 6)){
 	    	justification = textLeft;
 	    }
@@ -338,7 +337,6 @@ class XTDetailedDistanceDataFieldView extends Ui.DataField {
         
 		// Get showLastLapp value
     	showLastLap = getShowLastLapProp();  
-    	if (debugMode == true) {showLastLap = false;}  
     	
     	//Digits
 		zerotooneDigits = App.getApp().getProperty("zerotoone");
@@ -386,29 +384,49 @@ class XTDetailedDistanceDataFieldView extends Ui.DataField {
 		var valueFontHeight = Gfx.getFontHeight(valueFont);
 		var labelFontHeight = Gfx.getFontHeight(labelFont);
 		var lastValueFontHeight = Gfx.getFontHeight(lastValueFont);
+		if(showLastLap != true){lastValueFontHeight = 0;}
+		var heightOversizeValue = 1.00; //For 15% oversize enter 1.15
+		var widthOversizeValue = 1.00; //For 20% oversize enter 1.2
 		
-		if ((valueFontHeight + labelFontHeight + lastValueFontHeight) > height){
-			while (((valueFontHeight + labelFontHeight + lastValueFontHeight) > height) && valueFont >= 1 ){
+		if (overrideSizeing == true) {
+			writeDebug("getValueFont - overrideSizeing = " + overrideSizeing);
+			heightOversizeValue = App.getApp().getProperty("heightoversizeoverride");
+			writeDebug("getValueFont - heightoversizeoverride = " + heightOversizeValue);
+			widthOversizeValue = App.getApp().getProperty("widthoversizeoverride");
+			writeDebug("getValueFont - widthoversizeoverride = " + widthOversizeValue);
+		}
+		
+		writeDebug("getValueFont - screen height = " + height);
+		writeDebug("getValueFont - screen width = " + width);
+		writeDebug("getValueFont - initial value font before height check = " + valueFont);
+		writeDebug("getValueFont - initial combined font height = " + (valueFontHeight + labelFontHeight + lastValueFontHeight));
+		writeDebug("getValueFont - initial value font before height check = " + valueFont);
+		if ((valueFontHeight + labelFontHeight + lastValueFontHeight) > (height * heightOversizeValue)){
+			while (((valueFontHeight + labelFontHeight + lastValueFontHeight) > (height * heightOversizeValue)) && valueFont >= 1 ){
 				valueFont = valueFont - 1;
 				valueFontHeight = Gfx.getFontHeight(valueFont);
 			}
-			writeDebug("heigth to small");
+			writeDebug("getValueFont - screen heigth " + (height * heightOversizeValue) + " incl. " + heightOversizeValue +  " oversize factor to small for " + (valueFontHeight + labelFontHeight + lastValueFontHeight));
 		}
+		writeDebug("getValueFont - combined font height after height check = " + (valueFontHeight + labelFontHeight + lastValueFontHeight));
+		writeDebug("getValueFont - value font after height check = " + valueFont);
 
 		var valueFontWidth = dc.getTextWidthInPixels(lapDistanceString,valueFont);
-		valueFontWidth = valueFontWidth + (valueFontWidth * 0.1);
-		if (valueFontWidth > width){
-			while ((valueFontWidth > width) && valueFont >= 1 ){
+		valueFontWidth = valueFontWidth * widthOversizeValue;
+		writeDebug("getValueFont - value font width before width check = " + valueFontWidth);
+		if ((showLastLap != true) && (valueFontWidth > (width * widthOversizeValue))){
+			while ((valueFontWidth > (width * widthOversizeValue)) && valueFont >= 1 ){
 				valueFont = valueFont - 1;
 				valueFontWidth = dc.getTextWidthInPixels(lapDistanceString,valueFont);
-				valueFontWidth = valueFontWidth + (valueFontWidth * 0.1);
+				valueFontWidth = valueFontWidth * widthOversizeValue;
 			}
-			Sys.println("width to small");	
-		} 
+			writeDebug("getValueFont - screen width " + (width * widthOversizeValue) + " incl. " + widthOversizeValue +  " oversize factor to small for " + valueFontWidth);	
+		}
+		writeDebug("getValueFont - value font width after width check = " + valueFontWidth);
+		writeDebug("getValueFont - value font after width check = " + valueFont);
 		 
-		writeDebug("valueFont = " + valueFont);
-		writeDebug("valueFontWidth = " + valueFontWidth);
-		writeDebug("combinedFontHeight = " + (valueFontHeight + labelFontHeight + lastValueFontHeight));
+		writeDebug("getValueFont - valueFont = " + valueFont);
+		writeDebug("getValueFont - combinedFontHeight = " + (valueFontHeight + labelFontHeight + lastValueFontHeight) + " and width = " + valueFontWidth);
 		return valueFont;
 	}
 	
@@ -433,14 +451,12 @@ class XTDetailedDistanceDataFieldView extends Ui.DataField {
 //fr645m = "006-B2888-00"
 //fenix5splus = "006-B2900-00"						
 //vivoactive3m = "006-B2988-00"
-   	//vivoactive3mlte = "006-B3066-00"
-   	//fenix5plus = "006-B3110-00"
+//vivoactive3mlte = "006-B3066-00"
+//fenix5plus = "006-B3110-00"
 //fenix5xplus = "006-B3111-00"	
 //fr245 = "006-B3076-00"
 //fr245music = "006-B3077-00"
 //fr945 = "006-B3113-00"
-
-//Not used deviceID list:
 //approachs60 = "006-B2656-00"
 //d2bravo = "006-B2262-00"
 //d2bravo_titanium = "006-B2547-00"
