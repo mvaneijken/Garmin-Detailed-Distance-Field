@@ -140,10 +140,13 @@ class XTDetailedDistanceDataFieldView extends Ui.DataField {
 			valueFontHeight = Gfx.getFontHeight(valueFont);
 			valueFontDimentions = dc.getTextDimensions(lapDistanceString,valueFont);
 
-			//Top left or right
 			var obscurityFlags = DataField.getObscurityFlags();
 			var valuePosY = height / 2; 
 			var labelPosY = valuePosY - ((valueFontHeight/2) + (labelFontHeight/2));
+			if ((labelPosY - (labelFontHeight/2)) < (0 + (labelFontHeight/2))){
+				writeDebug("isMultiFieldLayout - labelPosY = " + labelPosY + " Correction to 0");
+				labelPosY = 0 + (labelFontHeight/2);
+			}
 			var lastValuePosY = valuePosY + ((valueFontHeight/2) + (lastValueFontHeight/2));
 			
 			if ((obscurityFlags == 3) or (obscurityFlags == 6)){
@@ -414,7 +417,7 @@ class XTDetailedDistanceDataFieldView extends Ui.DataField {
 		var valueFontWidth = dc.getTextWidthInPixels(lapDistanceString,valueFont);
 		valueFontWidth = valueFontWidth * widthOversizeValue;
 		writeDebug("getValueFont - value font width before width check = " + valueFontWidth);
-		if ((showLastLap != true) && (valueFontWidth > (width * widthOversizeValue))){
+		if ((showLastLap != true) or (valueFontWidth > (width * widthOversizeValue))){
 			while ((valueFontWidth > (width * widthOversizeValue)) && valueFont >= 1 ){
 				valueFont = valueFont - 1;
 				valueFontWidth = dc.getTextWidthInPixels(lapDistanceString,valueFont);
