@@ -3,13 +3,14 @@
 	<string id="label">Rnd Afst</string>
 	<string id="lastlaplabel">LR</string>
 	<string id="showLastLap_prop">Vorige ronde weergeven</string>
- 	<string id="digits">Configureer het aantal decimalen</string>
-	<string id="zerotoone">Decimalen van 0 tot 1 km of mijl (0 t/m 3)</string>
-	<string id="onetoten">Decimalen van 1 tot 10 km of mijl (0 t/m 3)</string>
-	<string id="tentohundred">Decimalen van 10 tot 100 km of mijl (0 t/m 3)</string>
-	<string id="hundredonwards">Decimalen vanaf 100 km of mijl (0 t/m 3)</string>
-	<string id="overridesizeing">Gebruik scherm correctiefactor (Alleen indien de weergave niet in het scherm past of juist te klein is)</string>
-	<string id="widthoversizeoverride">Correctiefactor in relatie tot de scherm breedte (0.5 t/m 1.5, standaard 1.0)</string>
-	<string id="heightoversizeoverride">Correctiefactor in relatie tot de scherm hoogte (0.5 t/m 1.5, standaard 1.0)</string>	
+	<string id="zerotoone">Decimalen van 0 tot 1 km/mijl</string>
+	<string id="digitsprompt">Van 0 t/m 3</string>
+	<string id="onetoten">Decimalen van 1 tot 10 km/mijl</string>
+	<string id="tentohundred">Decimalen van 10 tot 100 km/mijl</string>
+	<string id="hundredonwards">Decimalen vanaf 100 km/mijl)</string>
+	<string id="overridesizeing">Pas scherm correctiefactor toe (Indien de weergave past of te klein is)</string>
+	<string id="widthoversizeoverride">Correctiefactor tekst breedte in relatie tot de scherm breedte</string>
+	<string id="heightoversizeoverride">Correctiefactor tekst breedte in relatie tot de scherm hoogte</string>	
 	<string id="oversizeoverridepromptvalue">Waarde 0.5 tot 1.5 (standaard 1.0)</string>
+	<string id="debugmode">Debug modus (Zet alleen aan indien nodig!)</string>
 </strings>

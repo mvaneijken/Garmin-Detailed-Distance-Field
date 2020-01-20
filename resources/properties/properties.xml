@@ -6,5 +6,6 @@
 	<property id="hundredonwards" type="number">1</property>
 	<property id="overridesizeing" type="boolean">false</property>
 	<property id="widthoversizeoverride" type="float">1.0</property>
-	<property id="heightoversizeoverride" type="float">1.0</property>	
+	<property id="heightoversizeoverride" type="float">1.0</property>
+	<property id="debugmode" type="boolean">false</property>	
 </properties>

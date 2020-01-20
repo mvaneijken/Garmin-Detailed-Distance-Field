@@ -5,26 +5,27 @@
 	</setting>
 	<setting propertyKey="@Properties.zerotoone"
 		title="@Strings.zerotoone"
-		prompt="@Strings.digits">
+		prompt="@Strings.digitsprompt">
         <settingConfig type="numeric" required="true" min="0" max="3" />
 	</setting>
 	<setting propertyKey="@Properties.onetoten"
 		title="@Strings.onetoten"
-		prompt="@Strings.digits">
+		prompt="@Strings.digitsprompt">
         <settingConfig type="numeric" required="true" min="0" max="3" />
 	</setting>
 	<setting propertyKey="@Properties.tentohundred"
 		title="@Strings.tentohundred"
-		prompt="@Strings.digits">
+		prompt="@Strings.digitsprompt">
         <settingConfig type="numeric" required="true" min="0" max="3" />
 	</setting>
 	<setting propertyKey="@Properties.hundredonwards"
 		title="@Strings.hundredonwards"
-		prompt="@Strings.digits">
+		prompt="@Strings.digitsprompt">
         <settingConfig type="numeric" required="true" min="0" max="3" />
 	</setting>
 	<setting propertyKey="@Properties.overridesizeing"
-		title="@Strings.overridesizeing">
+		title="@Strings.overridesizeing"
+		prompt="@Strings.digitsprompt">
         <settingConfig type="boolean" required="false" />
 	</setting>	
 	<setting propertyKey="@Properties.heightoversizeoverride"
@@ -37,4 +38,8 @@
 		prompt="@Strings.oversizeoverridepromptvalue">
         <settingConfig type="numeric" required="false" min="0.5" max="1.5" />
 	</setting>
+	<setting propertyKey="@Properties.debugmode"
+		title="@Strings.debugmode">
+        <settingConfig type="boolean" required="false" />
+	</setting>	
 </settings>

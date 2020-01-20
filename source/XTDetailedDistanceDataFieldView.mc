@@ -32,12 +32,12 @@ class XTDetailedDistanceDataFieldView extends Ui.DataField {
 	hidden var valuePosY = 0;
 	hidden var lastLapDistanceString = setDistStr(lastLapDistance);
 	hidden var valueFont = Gfx.FONT_NUMBER_THAI_HOT;
-	hidden var labelFont =  Gfx.FONT_XTINY;
+	hidden var labelFont =  Gfx.FONT_SYSTEM_XTINY;
 	hidden var lastValueFont =  Gfx.FONT_XTINY;
 	hidden var width = 0;
 	hidden var height = 0;
 	hidden var overrideSizeing = App.getApp().getProperty("overridesizeing");
-	hidden var debugMode = false;	
+	hidden var debugMode = App.getApp().getProperty("debugmode");	
 
     function initialize() {
 		writeDebug("-------------- initialize --------------");
@@ -95,10 +95,9 @@ class XTDetailedDistanceDataFieldView extends Ui.DataField {
         height = dc.getHeight();
 
         var backgroundColor = getBackgroundColor();
-        // set background color
-        dc.setColor(backgroundColor, Graphics.COLOR_TRANSPARENT);
-        // set foreground color
-        dc.setColor((backgroundColor == Gfx.COLOR_BLACK) ? Gfx.COLOR_WHITE : Gfx.COLOR_BLACK, Graphics.COLOR_TRANSPARENT);
+        // set foreground color 
+        dc.setColor((backgroundColor == Gfx.COLOR_BLACK) ? Gfx.COLOR_WHITE : Gfx.COLOR_BLACK, (backgroundColor == Gfx.COLOR_BLACK) ? Gfx.COLOR_BLACK : Gfx.COLOR_WHITE);        
+    	writeDebug("onUpdate - foregroundcolor = " + ((backgroundColor == Gfx.COLOR_BLACK) ? Gfx.COLOR_WHITE : Gfx.COLOR_BLACK) + ", backgroundColor = " + ((backgroundColor == Gfx.COLOR_BLACK) ? Gfx.COLOR_BLACK : Gfx.COLOR_WHITE));
 
 		var valueFontHeight = Gfx.getFontHeight(valueFont);
 		var valueFontDimentions = dc.getTextDimensions(lapDistanceString,valueFont);
