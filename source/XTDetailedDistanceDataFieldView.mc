@@ -37,7 +37,7 @@ class XTDetailedDistanceDataFieldView extends Ui.DataField {
 	hidden var width = 0;
 	hidden var height = 0;
 	hidden var overrideSizeing = App.getApp().getProperty("overridesizeing");
-	hidden var debugMode = true;	
+	hidden var debugMode = false;	
 
     function initialize() {
 		writeDebug("-------------- initialize --------------");
