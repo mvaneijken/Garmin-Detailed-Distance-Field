@@ -99,6 +99,11 @@ class XTDetailedDistanceDataFieldView extends Ui.DataField {
         dc.setColor((backgroundColor == Gfx.COLOR_BLACK) ? Gfx.COLOR_WHITE : Gfx.COLOR_BLACK, (backgroundColor == Gfx.COLOR_BLACK) ? Gfx.COLOR_BLACK : Gfx.COLOR_WHITE);        
     	writeDebug("onUpdate - foregroundcolor = " + ((backgroundColor == Gfx.COLOR_BLACK) ? Gfx.COLOR_WHITE : Gfx.COLOR_BLACK) + ", backgroundColor = " + ((backgroundColor == Gfx.COLOR_BLACK) ? Gfx.COLOR_BLACK : Gfx.COLOR_WHITE));
 
+		//Flip display for Venu "006-B3226-00" (workarround until fixed)
+		if(devicePartNumber.equals("006-B3226-00")){
+			dc.setColor((backgroundColor == Gfx.COLOR_BLACK) ? Gfx.COLOR_BLACK : Gfx.COLOR_WHITE, (backgroundColor == Gfx.COLOR_BLACK) ? Gfx.COLOR_WHITE : Gfx.COLOR_BLACK);
+			writeDebug("onUpdate - Venu override " + devicePartNumber);
+		}
 		var valueFontHeight = Gfx.getFontHeight(valueFont);
 		var valueFontDimentions = dc.getTextDimensions(lapDistanceString,valueFont);
 		var labelFontHeight = Gfx.getFontHeight(labelFont);
@@ -489,4 +494,5 @@ class XTDetailedDistanceDataFieldView extends Ui.DataField {
 //fenix6xpro = "006-B3291-00"
 //vivoactive4 = "006-B3225-00"
 //vivoactive4s = "006-B3224-00"
+//venu = "006-B3226-00"
 
