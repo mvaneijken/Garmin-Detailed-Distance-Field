@@ -37,20 +37,39 @@ class XTDetailedDistanceDataFieldView extends Ui.DataField {
 	hidden var width = 0;
 	hidden var height = 0;
 	hidden var overrideSizeing = App.getApp().getProperty("overridesizeing");
-	hidden var debugMode = App.getApp().getProperty("debugmode");	
+	hidden var debugMode = App.getApp().getProperty("debugmode");
+	hidden var firmwareVersion;
+	hidden var firmwareVersionString = "";
+	hidden var firmwareVersionMajorMinorString = "";
+	hidden var firmwareVersionNumber = 0;
 
     function initialize() {
 		writeDebug("-------------- initialize --------------");
    
         DataField.initialize();
  		showLastLap = getShowLastLapProp();
+ 		writeDebug("initialize - showLastLap: " + showLastLap);
+		
 		screenHeigth = deviceSettings.getDeviceSettings().screenHeight;
+		writeDebug("initialize - screenHeigth: " + screenHeigth);
 		devicePartNumber = getDevicePartNumber();
+		writeDebug("initialize - devicePartNumber: " + devicePartNumber.toString());
+		
+		firmwareVersion = deviceSettings.firmwareVersion;
+		firmwareVersionString = Lang.format("$1$$2$", firmwareVersion);
+		firmwareVersionNumber = firmwareVersionString.toNumber();
+		firmwareVersionMajorMinorString = Lang.format("$1$.$2$", firmwareVersion);
+		writeDebug("initialize - firmwareVersion: " + firmwareVersionMajorMinorString + " (as number:" + firmwareVersionString + ")");
+
     	//Digits
 		zerotooneDigits = App.getApp().getProperty("zerotoone");
+		writeDebug("initialize - zerotooneDigits: " + zerotooneDigits);
 		onetotenDigits = App.getApp().getProperty("onetoten");
+		writeDebug("initialize - onetotenDigits: " + onetotenDigits);
 		tentohundredDigits = App.getApp().getProperty("tentohundred");
+		writeDebug("initialize - tentohundredDigits: " + tentohundredDigits);
 		hundredonwardsDigits = App.getApp().getProperty("zerotoone");
+		writeDebug("initialize - hundredonwardsDigits: " + hundredonwardsDigits);
 		
     }
 
@@ -67,10 +86,10 @@ class XTDetailedDistanceDataFieldView extends Ui.DataField {
             if(info.elapsedDistance != null){
                 distance = (info.elapsedDistance != null ? info.elapsedDistance : 0);
                 currentLapDistance =  distance - onTimerLapDistance;
-               } 
+            } 
             else {
                 currentLapDistance = 0.000;
-             }
+            }
         }
     }
 
@@ -86,23 +105,23 @@ class XTDetailedDistanceDataFieldView extends Ui.DataField {
 		onetotenDigits = App.getApp().getProperty("onetoten");
 		tentohundredDigits = App.getApp().getProperty("tentohundred");
 		hundredonwardsDigits = App.getApp().getProperty("hundredonwards");
-               
+
 		setDeviceSettingsDependentVariables();
-			
+		
 		var lapDistanceString = setDistStr(currentLapDistance);		
-	    
-     	width = dc.getWidth();
+
+        width = dc.getWidth();
         height = dc.getHeight();
 
         var backgroundColor = getBackgroundColor();
         // set foreground color 
         dc.setColor((backgroundColor == Gfx.COLOR_BLACK) ? Gfx.COLOR_WHITE : Gfx.COLOR_BLACK, (backgroundColor == Gfx.COLOR_BLACK) ? Gfx.COLOR_BLACK : Gfx.COLOR_WHITE);        
-    	writeDebug("onUpdate - foregroundcolor = " + ((backgroundColor == Gfx.COLOR_BLACK) ? Gfx.COLOR_WHITE : Gfx.COLOR_BLACK) + ", backgroundColor = " + ((backgroundColor == Gfx.COLOR_BLACK) ? Gfx.COLOR_BLACK : Gfx.COLOR_WHITE));
+        writeDebug("onUpdate - foregroundcolor = " + ((backgroundColor == Gfx.COLOR_BLACK) ? Gfx.COLOR_WHITE : Gfx.COLOR_BLACK) + ", backgroundColor = " + ((backgroundColor == Gfx.COLOR_BLACK) ? Gfx.COLOR_BLACK : Gfx.COLOR_WHITE));
 
 		//Flip display for Venu "006-B3226-00" (workarround until fixed)
-		if(devicePartNumber.equals("006-B3226-00")){
+		if((devicePartNumber.equals("006-B3226-00")) and (firmwareVersionNumber < 470 )){
 			dc.setColor((backgroundColor == Gfx.COLOR_BLACK) ? Gfx.COLOR_BLACK : Gfx.COLOR_WHITE, (backgroundColor == Gfx.COLOR_BLACK) ? Gfx.COLOR_WHITE : Gfx.COLOR_BLACK);
-			writeDebug("onUpdate - Venu override " + devicePartNumber);
+			writeDebug("onUpdate - Venu override " + devicePartNumber + ", firmwareVersion: " + firmwareVersionMajorMinorString + " (as number:" + firmwareVersionString + ") which is lower than 4.70 so we need to flip the background and foreground color!");
 		}
 		var valueFontHeight = Gfx.getFontHeight(valueFont);
 		var valueFontDimentions = dc.getTextDimensions(lapDistanceString,valueFont);
@@ -131,16 +150,16 @@ class XTDetailedDistanceDataFieldView extends Ui.DataField {
 			writeDebug("isSingleFieldLayout - labelPosY = " + labelPosY);
             dc.drawText(startPosX, valuePosY, valueFont, lapDistanceString, justification);
 			writeDebug("isSingleFieldLayout - valuePosY = "+ valuePosY);
-    		if (showLastLap == true){
+            if (showLastLap == true){
 				lastLapDistanceString = Ui.loadResource(lastLabLabelResource) + " " + setDistStr(lastLapDistance);
 				writeDebug("isSingleFieldLayout - lastValuePosY = " + lastValuePosY);
-            	dc.drawText(startPosX, lastValuePosY, lastValueFont, lastLapDistanceString, justificationlvalue);
+                dc.drawText(startPosX, lastValuePosY, lastValueFont, lastLapDistanceString, justificationlvalue);
 			}
 			writeDebug("**************");
         } 
         else {
-        	writeDebug("**************");
-        	valueFont = getValueFont(dc,lapDistanceString);
+            writeDebug("**************");
+            valueFont = getValueFont(dc,lapDistanceString);
 			valueFontHeight = Gfx.getFontHeight(valueFont);
 			valueFontDimentions = dc.getTextDimensions(lapDistanceString,valueFont);
 
@@ -201,35 +220,35 @@ class XTDetailedDistanceDataFieldView extends Ui.DataField {
 				writeDebug("debug info - justification: " + justification);
 				writeDebug("debug info - justificationlvalue: " + justificationlvalue);
 				writeDebug("debug info - startPosX: " + startPosX);
- 				writeDebug("debug info - devicePartNumber: " + devicePartNumber);
- 				writeDebug("debug info - getObscurityFlags: " + DataField.getObscurityFlags());
+				writeDebug("debug info - devicePartNumber: " + devicePartNumber);
+				writeDebug("debug info - getObscurityFlags: " + DataField.getObscurityFlags());
 				writeDebug("debug info - justification: " + getTextJustification());
- 				writeDebug("-------------- end --------------");												 
+				writeDebug("-------------- end --------------");												 
 		}
     }
     
-   	function isSingleFieldLayout() {
+	function isSingleFieldLayout() {
         return (DataField.getObscurityFlags() == OBSCURE_TOP | OBSCURE_LEFT | OBSCURE_BOTTOM | OBSCURE_RIGHT);
     }
     
     function getTextJustification() {
-    	var justification;
+		var justification;
         var textCenter = Gfx.TEXT_JUSTIFY_CENTER | Gfx.TEXT_JUSTIFY_VCENTER;
         writeDebug("getTextJustification - textCenter = " + textCenter);
         var textRight = Gfx.TEXT_JUSTIFY_RIGHT | Gfx.TEXT_JUSTIFY_VCENTER;
         writeDebug("getTextJustification - textRight = " + textRight);
         var textLeft = Gfx.TEXT_JUSTIFY_LEFT | Gfx.TEXT_JUSTIFY_VCENTER;
         writeDebug("getTextJustification - textLeft = " + textLeft);        
-	    if ( (DataField.getObscurityFlags() == 12) or (DataField.getObscurityFlags() == 6)){
-	    	justification = textLeft;
-	    }
-	    else if ((DataField.getObscurityFlags() == 3) or (DataField.getObscurityFlags() == 9)){
-	    	justification = textRight;
-	    }
-	    else{
-	    	justification = textCenter;
-	    }
-	    return justification;
+		if ( (DataField.getObscurityFlags() == 12) or (DataField.getObscurityFlags() == 6)){
+			justification = textLeft;
+		}
+		else if ((DataField.getObscurityFlags() == 3) or (DataField.getObscurityFlags() == 9)){
+			justification = textRight;
+		}
+		else{
+		justification = textCenter;
+		}
+		return justification;
     }
     
     function getTextJustificationLValue() {
