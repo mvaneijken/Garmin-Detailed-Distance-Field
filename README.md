@@ -5,8 +5,22 @@ This data field shows lap distance in the following (default) formats (depending
 - 1 - 10 km/mile = 0.00
 - 10 - beyond = 0.0
 
-I've created this data field because the native lap data field on my Forerunner 935 is not able to show distances in meters. Because my good old Forerunner 310XT was able to display distances in meters and Garmin gives the opertunity to create custom datafield, I've created a new datafield that supports this functionality.… More
+I've created this data field because the native lap data field on my Forerunner 935 is not able to show distances in meters. Because my good old Forerunner 310XT was able to display distances in meters and Garmin gives the opertunity to create custom datafield, I've created a new datafield that supports this functionality.
 
+Currently English and Dutch languages are supported.
+
+From the App settings in the Garmin Connect App you are able toe set the following parameters:
+- Show the previous lap distance below the current lap distance
+- Number of decimals from 0 to 1 kilometer / mile
+- Number of decimals from 1 tot 10 kilometer / mile
+- Number of decimals from 10 tot 100 kilometer / mile
+- Number of decimals from 100 kilometer / mile
+
+Depending on your device settings it shows distance in metric or statute format.
+
+The data field supports adding a correction factor for the width/heigth of the screen. This is especially handy for round devices when the displayed values are to big or too small.
+
+Note: Due limitations of the Garmin Connect SDK, detection of laps from pre-defined workout are only supported on devices compatible with Garmin Connect IQ 3.0 and higher. Other devices only can support laps recorded by pressing the "lap" button.
 
 ## What’s New
 Updates:
