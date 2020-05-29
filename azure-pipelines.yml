@@ -22,7 +22,7 @@ steps:
 
 - task: AzureKeyVault@1
   inputs:
-    azureSubscription: MSDN1 - Visual Studio Premium with MSDN
+    azureSubscription: MSDN1
     keyVaultName: connect-iq
     secretsFilter: connect-iq-dev-key
   displayName: 'Get Developer Key'
