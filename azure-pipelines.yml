@@ -28,7 +28,7 @@ steps:
   displayName: 'Get Developer Key'
 
 - script: |
-    echo '$(SECRET_NAME)' | base64 --decode > /opt/connectiq-developer-key.der;
+    echo '$(connect-iq-dev-key)' | base64 --decode > /opt/connectiq-developer-key.der;
   displayName: 'Write Developer Key'
 
 - script: |
