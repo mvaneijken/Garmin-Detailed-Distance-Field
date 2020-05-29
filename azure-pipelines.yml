@@ -1,0 +1,42 @@
+trigger:
+- master
+
+pool:
+  vmImage: 'Ubuntu-16.04'
+
+steps:
+- script: |
+    sudo apt-get update -y;
+    sudo apt-get install -qqy openjdk-8-jdk;
+    sudo apt-get install -qqy unzip wget git ssh tar gzip ca-certificates;
+    sudo apt-get clean;
+    sudo rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*;
+  displayName: 'Install Dependancies'
+
+- script: |
+    cd /opt;
+    wget -q https://developer.garmin.com/downloads/connect-iq/sdks/connectiq-sdk-win-3.1.8-2020-05-01-05516d846.zip -O ciq.zip;
+    unzip ciq.zip -d ciq;
+    rm -f ciq.zip;
+  displayName: 'Install ConnectIQ SDK'
+
+- task: AzureKeyVault@1
+  inputs:
+    azureSubscription: AZURE_SUBSCRIPTION
+    keyVaultName: KEYVAULT_NAME
+    secretsFilter: SECRET_NAME
+  displayName: 'Get Developer Key'
+
+- script: |
+    echo '$(SECRET_NAME)' | base64 --decode > /opt/connectiq-developer-key.der;
+  displayName: 'Write Developer Key'
+
+- script: |
+    java -Dfile.encoding=UTF-8 -Dapple.awt.UIElement=true -jar /opt/ciq/bin/monkeybrains.jar -o $(Build.ArtifactStagingDirectory)/MY_APP.iq -e -w -y /opt/connectiq-developer-key.der -r -f $(Build.SourcesDirectory)/monkey.jungle;
+  displayName: 'Build & Package iq file'
+
+- task: PublishBuildArtifacts@1
+  inputs:
+    pathtoPublish: '$(Build.ArtifactStagingDirectory)/MY_APP.iq' 
+    artifactName: 'iq'
+  displayName: 'Publish Artifact'
