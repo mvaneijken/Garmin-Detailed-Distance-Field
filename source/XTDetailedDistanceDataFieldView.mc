@@ -42,6 +42,7 @@ class XTDetailedDistanceDataFieldView extends Ui.DataField {
 	hidden var firmwareVersionString = "";
 	hidden var firmwareVersionMajorMinorString = "";
 	hidden var firmwareVersionNumber = 0;
+	hidden var systemStats = Sys.getSystemStats();
 
     function initialize() {
 		writeDebug("-------------- initialize --------------");
@@ -201,6 +202,11 @@ class XTDetailedDistanceDataFieldView extends Ui.DataField {
         }
 		//Debug info
 		if (debugMode == true) {
+				systemStats = Sys.getSystemStats();
+				writeDebug("debug info - system total memory bytes: " + systemStats.totalMemory.toString());
+				writeDebug("debug info - system free memory bytes: " + systemStats.freeMemory.toString());
+				writeDebug("debug info - system used memory bytes: " + systemStats.usedMemory.toString());			
+				writeDebug("debug info - system battery %: " + systemStats.battery.toString());
 				writeDebug("debug info - width: " + width);
 				writeDebug("debug info - height: " + height);
 				writeDebug("debug info - backgroundColor: " + backgroundColor);
@@ -411,8 +417,8 @@ class XTDetailedDistanceDataFieldView extends Ui.DataField {
 		var labelFontHeight = Gfx.getFontHeight(labelFont);
 		var lastValueFontHeight = Gfx.getFontHeight(lastValueFont);
 		if(showLastLap != true){lastValueFontHeight = 0;}
-		var heightOversizeValue = 1.00; //For 15% oversize enter 1.15
-		var widthOversizeValue = 1.00; //For 20% oversize enter 1.2
+		var heightOversizeValue = 100; //For 15% oversize enter 115
+		var widthOversizeValue = 100; //For 20% oversize enter 120
 		
 		if (overrideSizeing == true) {
 			writeDebug("getValueFont - overrideSizeing = " + overrideSizeing);
@@ -426,27 +432,26 @@ class XTDetailedDistanceDataFieldView extends Ui.DataField {
 		writeDebug("getValueFont - screen width = " + width);
 		writeDebug("getValueFont - initial value font before height check = " + valueFont);
 		writeDebug("getValueFont - initial combined font height = " + (valueFontHeight + labelFontHeight + lastValueFontHeight));
-		writeDebug("getValueFont - initial value font before height check = " + valueFont);
-		if ((valueFontHeight + labelFontHeight + lastValueFontHeight) > (height * heightOversizeValue)){
-			while (((valueFontHeight + labelFontHeight + lastValueFontHeight) > (height * heightOversizeValue)) && valueFont >= 1 ){
+		if ((valueFontHeight + labelFontHeight + lastValueFontHeight) > (height * (heightOversizeValue / 100))){
+			while (((valueFontHeight + labelFontHeight + lastValueFontHeight) > (height * (heightOversizeValue / 100))) && valueFont >= 1 ){
 				valueFont = valueFont - 1;
 				valueFontHeight = Gfx.getFontHeight(valueFont);
 			}
-			writeDebug("getValueFont - screen heigth " + (height * heightOversizeValue) + " incl. " + heightOversizeValue +  " oversize factor to small for " + (valueFontHeight + labelFontHeight + lastValueFontHeight));
+			writeDebug("getValueFont - screen heigth " + (height * (heightOversizeValue / 100)) + " incl. " + (heightOversizeValue / 100) +  " oversize factor to small for " + (valueFontHeight + labelFontHeight + lastValueFontHeight));
 		}
 		writeDebug("getValueFont - combined font height after height check = " + (valueFontHeight + labelFontHeight + lastValueFontHeight));
 		writeDebug("getValueFont - value font after height check = " + valueFont);
 
 		var valueFontWidth = dc.getTextWidthInPixels(lapDistanceString,valueFont);
-		valueFontWidth = valueFontWidth * widthOversizeValue;
+		valueFontWidth = valueFontWidth * (widthOversizeValue / 100);
 		writeDebug("getValueFont - value font width before width check = " + valueFontWidth);
-		if ((showLastLap != true) or (valueFontWidth > (width * widthOversizeValue))){
-			while ((valueFontWidth > (width * widthOversizeValue)) && valueFont >= 1 ){
+		if ((showLastLap != true) or (valueFontWidth > (width * (widthOversizeValue / 100)))){
+			while ((valueFontWidth > (width * ( widthOversizeValue / 100))) && valueFont >= 1 ){
 				valueFont = valueFont - 1;
 				valueFontWidth = dc.getTextWidthInPixels(lapDistanceString,valueFont);
-				valueFontWidth = valueFontWidth * widthOversizeValue;
+				valueFontWidth = valueFontWidth * (widthOversizeValue / 100);
 			}
-			writeDebug("getValueFont - screen width " + (width * widthOversizeValue) + " incl. " + widthOversizeValue +  " oversize factor to small for " + valueFontWidth);	
+			writeDebug("getValueFont - screen width " + (width * (widthOversizeValue / 100)) + " incl. " + (widthOversizeValue  / 100) +  " oversize factor to small for " + valueFontWidth);	
 		}
 		writeDebug("getValueFont - value font width after width check = " + valueFontWidth);
 		writeDebug("getValueFont - value font after width check = " + valueFont);
