@@ -24,6 +24,8 @@ Note: Due limitations of the Garmin Connect SDK, detection of laps from pre-defi
 
 ## What’s New
 Updates:
+2.2.5: Fix for crash on FR935. Note! Screen correction now based on percentage 50% - 100%.
+Small textual updates.
 
 2.2.4: Background color fix for Venu devices with firmware 4.70 or higher (workarround still applies for firmware versions lower than 4.70);
 Updated to Connect IQ SDK 3.1.8;
