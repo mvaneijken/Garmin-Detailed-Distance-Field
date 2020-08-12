@@ -24,6 +24,7 @@ Note: Due limitations of the Garmin Connect SDK, detection of laps from pre-defi
 
 ## What’s New
 Updates:
+2.2.6: Fix for 'Out of Memory Error' on earlier devices (e.g. FR235). 
 
 2.2.5: Fix for crash on FR935. Note! Screen correction now based on percentage 50% - 100%.
 Small textual updates.
