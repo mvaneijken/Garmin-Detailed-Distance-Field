@@ -11,20 +11,21 @@ steps:
     sudo apt-get install -qqy unzip wget git ssh tar gzip ca-certificates;
     sudo apt-get clean;
     sudo rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*;
-  displayName: 'Install Dependancies'
+  displayName: 'Install Dependencies'
 
 - script: |
     cd /opt;
-    wget -q https://developer.garmin.com/downloads/connect-iq/sdks/connectiq-sdk-win-3.1.8-2020-05-01-05516d846.zip -O ciq.zip;
+    #Source = https://developer.garmin.com/downloads/connect-iq/sdks/sdks.json
+    wget -q https://developer.garmin.com/downloads/connect-iq/sdks/connectiq-sdk-win-4.0.6-2021-10-06-af9b9d6e2.zip -O ciq.zip;
     unzip ciq.zip -d ciq;
     rm -f ciq.zip;
   displayName: 'Install ConnectIQ SDK'
 
 - task: AzureKeyVault@1
   inputs:
-    azureSubscription: MSDN1
-    keyVaultName: connect-iq
-    secretsFilter: connect-iq-dev-key
+    azureSubscription: $(azureSubscription)
+    keyVaultName: $(keyVaultName)
+    secretsFilter: $(secretsFilter)
   displayName: 'Get Developer Key'
 
 - script: |
@@ -37,6 +38,6 @@ steps:
 
 - task: PublishBuildArtifacts@1
   inputs:
-    pathtoPublish: '$(Build.ArtifactStagingDirectory)/MY_APP.iq' 
+    pathtoPublish: '$(Build.ArtifactStagingDirectory)/MY_APP.iq'
     artifactName: 'iq'
   displayName: 'Publish Artifact'
