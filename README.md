@@ -24,6 +24,10 @@ Note: Due limitations of the Garmin Connect SDK, detection of laps from pre-defi
 
 ## What’s New
 Updates:
+2.2.8: Support new devices (e.g. Fenix 7, Tactix, FR55), update Garmin Connect IQ to 4.1.3.
+
+2.2.7: Support new devices, update Garmin Connect IQ to 4.0.6, minor code optimizations.
+
 2.2.6: Fix for 'Out of Memory Error' on earlier devices (e.g. FR235). 
 
 2.2.5: Fix for crash on FR935. Note! Screen correction now based on percentage 50% - 100%.
