@@ -24,6 +24,8 @@ Note: Due limitations of the Garmin Connect SDK, detection of laps from pre-defi
 
 ## What’s New
 Updates:
+2.2.9: Support new devices (e.g. FR255, FR955)
+
 2.2.8: Support new devices (e.g. Fenix 7, Tactix, FR55), update Garmin Connect IQ to 4.1.3.
 
 2.2.7: Support new devices, update Garmin Connect IQ to 4.0.6, minor code optimizations.
