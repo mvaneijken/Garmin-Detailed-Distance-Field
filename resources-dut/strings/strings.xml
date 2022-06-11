@@ -3,6 +3,7 @@
 	<string id="label">Rnd Afst</string>
 	<string id="lastlaplabel">LR</string>
 	<string id="showLastLap_prop">Vorige ronde weergeven</string>
+	<string id="hideLabel">Verberg naam data field</string>
 	<string id="zerotoone">Decimalen van 0 tot 1 km/mijl</string>
 	<string id="digitsprompt">Van 0 t/m 3</string>
 	<string id="onetoten">Decimalen van 1 tot 10 km/mijl</string>

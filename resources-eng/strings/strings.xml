@@ -3,6 +3,7 @@
 	<string id="label">Lap Dist</string>
 	<string id="lastlaplabel">LL</string>
 	<string id="showLastLap_prop">Show previous lap distance</string>
+	<string id="hideLabel">Hide data field label</string>
 	<string id="zerotoone">Decimal digits from 0 to 1 km/mile</string>
 	<string id="digitsprompt">From 0 to 3</string>
 	<string id="onetoten">Decimal digits from 1 to 10 km/mile</string>
