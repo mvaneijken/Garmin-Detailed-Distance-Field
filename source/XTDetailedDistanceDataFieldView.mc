@@ -43,6 +43,7 @@ class XTDetailedDistanceDataFieldView extends Ui.DataField {
 	hidden var firmwareVersionMajorMinorString = "";
 	hidden var firmwareVersionNumber = 0;
 	hidden var systemStats = Sys.getSystemStats();
+	hidden var hideLabel = false;
 
     function initialize() {
 		//writeDebug("-------------- initialize --------------");
@@ -72,6 +73,8 @@ class XTDetailedDistanceDataFieldView extends Ui.DataField {
 		hundredonwardsDigits = App.getApp().getProperty("zerotoone");
 		//writeDebug("initialize - hundredonwardsDigits: " + hundredonwardsDigits);
 
+		//Hide Label
+		hideLabel = App.getApp().getProperty("hideLabel");
     }
 
     // Set your layout here. Anytime the size of obscurity of
@@ -127,7 +130,13 @@ class XTDetailedDistanceDataFieldView extends Ui.DataField {
 		var valueFontHeight = Gfx.getFontHeight(valueFont);
 		var valueFontDimentions = dc.getTextDimensions(lapDistanceString,valueFont);
 		var labelFontHeight = Gfx.getFontHeight(labelFont);
+		if(hideLabel == true){
+			labelFontHeight = 0;
+		}
 		var labelFontDimentions = dc.getTextDimensions(Ui.loadResource(labelResource),labelFont);
+		if(hideLabel == true){
+			labelFontDimentions = 0;
+		}
 		var labelPosY = 0;
 		var lastValueFontHeight = Gfx.getFontHeight(lastValueFont);
 		var lastValueFontDimentions = dc.getTextDimensions(lastLapDistanceString,lastValueFont);
@@ -148,7 +157,9 @@ class XTDetailedDistanceDataFieldView extends Ui.DataField {
 			labelPosY = valuePosY - ((labelFontHeight/2) + (valueFontHeight/2));
 			lastValuePosY = valuePosY + ((valueFontHeight/2) + (lastValueFontHeight/2));
 
-            dc.drawText(startPosX, labelPosY, labelFont, Ui.loadResource(labelResource), justification);
+			if(hideLabel == false){
+            	dc.drawText(startPosX, labelPosY, labelFont, Ui.loadResource(labelResource), justification);
+			}
 			//writeDebug("isSingleFieldLayout - labelPosY = " + labelPosY);
             dc.drawText(startPosX, valuePosY, valueFont, lapDistanceString, justification);
 			//writeDebug("isSingleFieldLayout - valuePosY = "+ valuePosY);
@@ -166,11 +177,18 @@ class XTDetailedDistanceDataFieldView extends Ui.DataField {
 			valueFontDimentions = dc.getTextDimensions(lapDistanceString,valueFont);
 
 			var obscurityFlags = DataField.getObscurityFlags();
-			valuePosY = height / 2;
-			labelPosY = valuePosY - ((valueFontHeight/2) + (labelFontHeight/2));
-			if ((labelPosY - (labelFontHeight/2)) < (0 + (labelFontHeight/2))){
-				//writeDebug("isMultiFieldLayout - labelPosY = " + labelPosY + " Correction to 0");
-				labelPosY = 0 + (labelFontHeight/2);
+			if(hideLabel == false || obscurityFlags == 7){
+				valuePosY = height / 2;
+			}
+			else{
+				valuePosY = height / 3;
+			}
+			if(hideLabel == false){
+				labelPosY = valuePosY - ((valueFontHeight/2) + (labelFontHeight/2));
+				if ((labelPosY - (labelFontHeight/2)) < (0 + (labelFontHeight/2))){
+					//writeDebug("isMultiFieldLayout - labelPosY = " + labelPosY + " Correction to 0");
+					labelPosY = 0 + (labelFontHeight/2);
+				}
 			}
 			lastValuePosY = valuePosY + ((valueFontHeight/2) + (lastValueFontHeight/2));
 
@@ -189,10 +207,19 @@ class XTDetailedDistanceDataFieldView extends Ui.DataField {
 				valuePosY = labelPosY + ((valueFontHeight/2) + (labelFontHeight/2));
 				lastValuePosY = valuePosY + ((valueFontHeight/2) + (lastValueFontHeight/2));
 			}
-
-            dc.drawText(startPosX, labelPosY, labelFont, Ui.loadResource(labelResource), justification);
-			//writeDebug("isMultiFieldLayout - labelPosY = "+ labelPosY);
-            dc.drawText(startPosX, valuePosY, valueFont, lapDistanceString, justification);
+			if(hideLabel == true && obscurityFlags == 7){
+				//writeDebug("isMultiFieldLayout - Bottom center top");
+				lastValuePosY = height - (lastValueFontHeight/2);
+				if(showLastLap != true){
+					lastValuePosY = 0;
+				}
+				valuePosY = lastValuePosY - ((valueFontHeight/2) + (lastValueFontHeight/2));
+			}
+			if(hideLabel == false){
+	            dc.drawText(startPosX, labelPosY, labelFont, Ui.loadResource(labelResource), justification);
+				//writeDebug("isMultiFieldLayout - labelPosY = "+ labelPosY);
+			}
+		    dc.drawText(startPosX, valuePosY, valueFont, lapDistanceString, justification);
 			//writeDebug("isMultiFieldLayout - valuePosY = "+ valuePosY);
     		if (showLastLap == true){
 				lastLapDistanceString = Ui.loadResource(lastLabLabelResource) + " " + setDistStr(lastLapDistance);
@@ -416,6 +443,9 @@ class XTDetailedDistanceDataFieldView extends Ui.DataField {
 		var valueFont = Gfx.FONT_NUMBER_THAI_HOT;
 		var valueFontHeight = Gfx.getFontHeight(valueFont);
 		var labelFontHeight = Gfx.getFontHeight(labelFont);
+		if(hideLabel == true){
+			labelFontHeight = 0;
+		}
 		var lastValueFontHeight = Gfx.getFontHeight(lastValueFont);
 		if(showLastLap != true){lastValueFontHeight = 0;}
 		var heightOversizeValue = 100; //For 15% oversize enter 115
