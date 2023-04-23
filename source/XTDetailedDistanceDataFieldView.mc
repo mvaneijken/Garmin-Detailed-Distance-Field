@@ -375,15 +375,6 @@ class XTDetailedDistanceDataFieldView extends Ui.DataField {
 		return distStr;
 	}
 
-	function setFontColor(item){
-        // Set font color
-        if (getBackgroundColor() == Gfx.COLOR_BLACK) {
-            item.setColor(Gfx.COLOR_WHITE);
-        } else {
-            item.setColor(Gfx.COLOR_BLACK);
-        }
-	}
-
 	function setDeviceSettingsDependentVariables() {
         if (Sys.getDeviceSettings().distanceUnits == System.UNIT_METRIC) {
             kmOrMileInMeters = 1000;
@@ -391,43 +382,6 @@ class XTDetailedDistanceDataFieldView extends Ui.DataField {
         else {
             kmOrMileInMeters = 1610;
         }
-    }
-
-    function showDataField() {
-
-		// Get showLastLapp value
-    	showLastLap = getShowLastLapProp();
-
-    	//Digits
-		zerotooneDigits = App.getApp().getProperty("zerotoone");
-		onetotenDigits = App.getApp().getProperty("onetoten");
-		tentohundredDigits = App.getApp().getProperty("tentohundred");
-		hundredonwardsDigits = App.getApp().getProperty("zerotoone");
-
-        // Set the background color
-        View.findDrawableById("Background").setColor(getBackgroundColor());
-
-        // Set the foreground color and value
-        var value = View.findDrawableById("value");
-        setFontColor(value);
-
-        // Set the font color and value
-        var label = View.findDrawableById("label");
-        setFontColor(label);
-
-        // Set the font color and value
-        var lastvalue = View.findDrawableById("lastvalue");
-        setFontColor(lastvalue);
-
-		setDeviceSettingsDependentVariables();
-
-		var lapDistanceString = setDistStr(currentLapDistance);
-		value.setText(lapDistanceString);
-
-		if (showLastLap == true){
-			var lastLapDistanceString = setDistStr(lastLapDistance);
-			lastvalue.setText(lastLapDistanceString);
-		}
     }
 
 	function getDevicePartNumber() {
@@ -466,7 +420,7 @@ class XTDetailedDistanceDataFieldView extends Ui.DataField {
 		if ((valueFontHeight + labelFontHeight + lastValueFontHeight) > (height * (heightOversizeValue / 100))){
 			while (((valueFontHeight + labelFontHeight + lastValueFontHeight) > (height * (heightOversizeValue / 100))) && valueFont >= 1 ){
 				valueFont = valueFont - 1;
-				valueFontHeight = Gfx.getFontHeight(valueFont);
+				valueFontHeight = Gfx.getFontHeight(valueFont as Gfx.FontType);
 			}
 			//writeDebug("getValueFont - screen heigth " + (height * (heightOversizeValue / 100)) + " incl. " + (heightOversizeValue / 100) +  " oversize factor to small for " + (valueFontHeight + labelFontHeight + lastValueFontHeight));
 		}
