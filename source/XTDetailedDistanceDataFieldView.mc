@@ -420,7 +420,7 @@ class XTDetailedDistanceDataFieldView extends Ui.DataField {
 		if ((valueFontHeight + labelFontHeight + lastValueFontHeight) > (height * (heightOversizeValue / 100))){
 			while (((valueFontHeight + labelFontHeight + lastValueFontHeight) > (height * (heightOversizeValue / 100))) && valueFont >= 1 ){
 				valueFont = valueFont - 1;
-				valueFontHeight = Gfx.getFontHeight(valueFont);
+				valueFontHeight = Gfx.getFontHeight(valueFont as Gfx.FontType);
 			}
 			//writeDebug("getValueFont - screen heigth " + (height * (heightOversizeValue / 100)) + " incl. " + (heightOversizeValue / 100) +  " oversize factor to small for " + (valueFontHeight + labelFontHeight + lastValueFontHeight));
 		}
