@@ -25,6 +25,12 @@ Note: Due limitations of the Garmin Connect SDK, detection of laps from pre-defi
 ## What’s New
 Updates:
 
+2.3.2: Update to Connect IQ SDK 6.2.1
+       Add support for the new Fenix 7X series, Epix2 Pro series and Approach S70
+       Change background color to transparent instead of the black or white
+
+2.3.1: Support new devices (e.g. FR965), update Garmin Connect IQ to 4.2.2
+
 2.3: New option to hide label in order to make room for a larger value font
 
 2.2.9: Support new devices (e.g. FR255, FR955)
@@ -33,28 +39,28 @@ Updates:
 
 2.2.7: Support new devices, update Garmin Connect IQ to 4.0.6, minor code optimizations.
 
-2.2.6: Fix for 'Out of Memory Error' on earlier devices (e.g. FR235). 
+2.2.6: Fix for 'Out of Memory Error' on earlier devices (e.g. FR235).
 
 2.2.5: Fix for crash on FR935. Note! Screen correction now based on percentage 50% - 100%.
-Small textual updates.
+       Small textual updates.
 
 2.2.4: Background color fix for Venu devices with firmware 4.70 or higher (workarround still applies for firmware versions lower than 4.70);
-Updated to Connect IQ SDK 3.1.8;
+       Updated to Connect IQ SDK 3.1.8;
 
 2.2.3: Background color fix for Venu devices (workarround by inverting background and foreground color)
 
 2.2.2: Background color fix for Venu devices
-Added debug option (Please only use when needed!)
+       Added debug option (Please only use when needed!)
 
 2.2.1: Support for Fenix 6 devices, Venu, VivoActive 4, Bravo D2 devices, Marq devices;
-Support for setting a correction factor for the width/heigth of the screen. This is especially handy for round devices when the displayed values are to big or too small.
-A prefix is added to the last lap distance value.
+       Support for setting a correction factor for the width/heigth of the screen. This is especially handy for round devices when the displayed values are to big or too small.
+       A prefix is added to the last lap distance value.
 
 2.1: Support for Forerunner 945, Forerunner 245 en Forerunner 245 Music
 
 2.0: Support for additional devices like the Fenix5 and Forerunner 935
-Possibility to set your own lap decimals from the Garmin Connect App
-Support lap detection from workouts (Connect IQ 3.0 devices only!)
+       Possibility to set your own lap decimals from the Garmin Connect App
+       Support lap detection from workouts (Connect IQ 3.0 devices only!)
 
 1.13: Memory optimization
 
