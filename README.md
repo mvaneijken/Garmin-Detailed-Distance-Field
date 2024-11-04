@@ -24,11 +24,13 @@ Note: Due limitations of the Garmin Connect SDK, detection of laps from pre-defi
 
 ## What’s New
 Updates:
-
+2.3.3: Update to Connect IQ SDK 7.3.1
+       Add support for new devices (e.g. Fenix 8, Venu 3)
+          
 2.3.2: Update to Connect IQ SDK 6.2.1
        Add support for the new Fenix 7X series, Epix2 Pro series and Approach S70
        Change background color to transparent instead of the black or white
-
+          
 2.3.1: Support new devices (e.g. FR965), update Garmin Connect IQ to 4.2.2
 
 2.3: New option to hide label in order to make room for a larger value font
