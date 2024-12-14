@@ -1,6 +1,16 @@
 trigger:
 - master
 
+variables:
+- name: name
+  value: 'Garmin-Detailed-Distance-Field' 
+- name: azureSubscription
+  value: 'Microsoft Partner Network'
+- name: keyVaultName
+  value: 'connect-iq'
+- name: secretsFilter
+  value: '*'
+
 pool:
   vmImage: 'Ubuntu-16.04'
 
@@ -16,7 +26,7 @@ steps:
 - script: |
     cd /opt;
     #Source = https://developer.garmin.com/downloads/connect-iq/sdks/sdks.json
-    wget -q https://developer.garmin.com/downloads/connect-iq/sdks/connectiq-sdk-win-4.0.6-2021-10-06-af9b9d6e2.zip -O ciq.zip;
+    wget -q https://developer.garmin.com/downloads/connect-iq/sdks/connectiq-sdk-lin-7.4.3-2024-12-11-90ec25e45.zip -O ciq.zip;
     unzip ciq.zip -d ciq;
     rm -f ciq.zip;
   displayName: 'Install ConnectIQ SDK'
@@ -38,6 +48,6 @@ steps:
 
 - task: PublishBuildArtifacts@1
   inputs:
-    pathtoPublish: '$(Build.ArtifactStagingDirectory)/MY_APP.iq'
+    pathtoPublish: '$(Build.ArtifactStagingDirectory)/$(name).iq'
     artifactName: 'iq'
   displayName: 'Publish Artifact'
