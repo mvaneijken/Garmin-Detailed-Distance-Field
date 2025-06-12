@@ -7,6 +7,6 @@
 	<property id="overridesizeing" type="boolean">false</property>
 	<property id="widthoversizeoverride" type="number">100</property>
 	<property id="heightoversizeoverride" type="number">100</property>
-	<property id="hideLabel" type="boolean">false</property>	
-	<property id="debugmode" type="boolean">false</property>	
+	<property id="hideLabel" type="boolean">false</property>
+	<!-- <property id="debugmode" type="boolean">false</property>	 -->
 </properties>

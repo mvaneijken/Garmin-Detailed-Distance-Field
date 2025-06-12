@@ -13,5 +13,5 @@
 	<string id="widthoversizeoverride">Configure screen width correction (50% - 150%)</string>
 	<string id="heightoversizeoverride">Configure screen height correction (50% - 150%)</string>
 	<string id="oversizeoverridepromptvalue">Valid values between 50% and 150% (default 100%)</string>
-	<string id="debugmode">Debug modus (Create an empty log file first in the apps log directory on the device. Enable only when needed!)</string>
+	<!-- <string id="debugmode">Debug modus (Create an empty log file first in the apps log directory on the device. Enable only when needed!)</string> -->
 </strings>

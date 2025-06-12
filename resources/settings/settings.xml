@@ -31,19 +31,19 @@
 		title="@Strings.overridesizeing"
 		prompt="@Strings.digitsprompt">
         <settingConfig type="boolean" required="false" />
-	</setting>	
+	</setting>
 	<setting propertyKey="@Properties.heightoversizeoverride"
 		title="@Strings.heightoversizeoverride"
 		prompt="@Strings.oversizeoverridepromptvalue">
         <settingConfig type="numeric" required="false" min="50" max="150" />
-	</setting>	
+	</setting>
 	<setting propertyKey="@Properties.widthoversizeoverride"
 		title="@Strings.widthoversizeoverride"
 		prompt="@Strings.oversizeoverridepromptvalue">
         <settingConfig type="numeric" required="false" min="50" max="150" />
 	</setting>
-	<setting propertyKey="@Properties.debugmode"
+	<!-- <setting propertyKey="@Properties.debugmode"
 		title="@Strings.debugmode">
         <settingConfig type="boolean" required="false" />
-	</setting>	
+	</setting>	 -->
 </settings>
