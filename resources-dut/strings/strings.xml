@@ -11,7 +11,7 @@
 	<string id="hundredonwards">Decimalen vanaf 100 km/mijl)</string>
 	<string id="overridesizeing">Pas scherm correctiefactor toe (Werkt alleen de weergave niet past of te klein is)</string>
 	<string id="widthoversizeoverride">Scherm correctie breedte (50% - 150%)</string>
-	<string id="heightoversizeoverride">Scherm correctie hoogte (50% - 150%)</string>	
+	<string id="heightoversizeoverride">Scherm correctie hoogte (50% - 150%)</string>
 	<string id="oversizeoverridepromptvalue">Waarde 50% tot 150% (standaard 100%)</string>
-	<string id="debugmode">Debug modus (Maak hiervoor een lege log file aan in de apps log directory op het apparaat. Gebruik alleen indien nodig!)</string>
+	<!-- <string id="debugmode">Debug modus (Maak hiervoor een lege log file aan in de apps log directory op het apparaat. Gebruik alleen indien nodig!)</string> -->
 </strings>
