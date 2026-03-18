@@ -7,12 +7,8 @@ class XTDetailedDistanceDataFieldView extends Ui.DataField {
   hidden var currentLapDistance = 0;
   hidden var onTimerLapDistance = 0;
   hidden var distance = 0;
-  hidden var kmOrMileInMeters = 1000;
-  hidden var distanceUnits = null;
-  hidden const ZERO_DISTANCE3 = "0.000";
-  hidden const ZERO_DISTANCE2 = "0.00";
-  hidden const ZERO_DISTANCE1 = "0.0";
-  hidden const ZERO_DISTANCE = "0";
+  //hidden var distanceUnits = null;
+
   hidden var lastLapDistance = 0;
   hidden var showLastLap = false;
   hidden var prevLapDistance = 0;
@@ -20,47 +16,54 @@ class XTDetailedDistanceDataFieldView extends Ui.DataField {
   hidden var labelResource = Rez.Strings.label;
   hidden var lastLabLabelResource = Rez.Strings.lastlaplabel;
   hidden var deviceSettings = Sys.getDeviceSettings();
-  hidden var version = deviceSettings.monkeyVersion;
-  hidden var versionString = Lang.format("$1$.$2$.$3$", version);
-  hidden var majorVersionString = Lang.format("$1$", version);
-  hidden var devicePartNumber = null;
   hidden var zeroToOneDigits = 3;
   hidden var oneToTenDigits = 2;
   hidden var tenToHundredDigits = 2;
   hidden var hundredOnwardsDigits = 1;
   hidden var valuePosY = 0;
-  hidden var lastLapDistanceString = setDistStr(lastLapDistance);
   hidden var valueFont = Gfx.FONT_NUMBER_THAI_HOT;
   hidden var labelFont = Gfx.FONT_SYSTEM_XTINY;
   hidden var lastValueFont = Gfx.FONT_XTINY;
   hidden var width = 0;
   hidden var height = 0;
   hidden var overrideSizing = App.Properties.getValue("overridesizeing");
-  hidden var debugMode = App.Properties.getValue("debugmode");
-  hidden var firmwareVersion;
-  hidden var firmwareVersionString = "";
-  hidden var firmwareVersionMajorMinorString = "";
-  hidden var firmwareVersionNumber = 0;
-  hidden var systemStats = Sys.getSystemStats();
+  //hidden var version = deviceSettings.monkeyVersion;
+  //hidden var versionString = Lang.format("$1$.$2$.$3$", version);
+  //hidden var majorVersionString = Lang.format("$1$", version);
+  //hidden var devicePartNumber = null;
+  //hidden var debugMode = App.Properties.getValue("debugmode");
+  //hidden var firmwareVersion;
+  //hidden var firmwareVersionString = "";
+  //hidden var firmwareVersionMajorMinorString = "";
+  //hidden var firmwareVersionNumber = 0;
+  //hidden var systemStats = Sys.getSystemStats();
   hidden var hideLabel = false;
+  hidden var lastLapDistanceString = "";
 
   function initialize() {
     //writeDebug("-------------- initialize --------------");
 
     DataField.initialize();
 
-    showLastLap = getShowLastLapProp();
+    lastLapDistanceString = Functions.setDistStr(
+      distance,
+      zeroToOneDigits,
+      oneToTenDigits,
+      tenToHundredDigits,
+      hundredOnwardsDigits
+    );
+    showLastLap = Functions.getShowLastLapProp();
     //writeDebug("initialize - showLastLap: " + showLastLap);
 
     screenHeight = deviceSettings.getDeviceSettings().screenHeight;
     //writeDebug("initialize - screenHeight: " + screenHeight);
-    devicePartNumber = getDevicePartNumber();
+    //devicePartNumber = Functions.getDevicePartNumber();
     //writeDebug("initialize - devicePartNumber: " + devicePartNumber.toString());
 
-    firmwareVersion = deviceSettings.firmwareVersion;
-    firmwareVersionString = Lang.format("$1$$2$", firmwareVersion);
-    firmwareVersionNumber = firmwareVersionString.toNumber();
-    firmwareVersionMajorMinorString = Lang.format("$1$.$2$", firmwareVersion);
+    //firmwareVersion = deviceSettings.firmwareVersion;
+    //firmwareVersionString = Lang.format("$1$$2$", firmwareVersion);
+    //firmwareVersionNumber = firmwareVersionString.toNumber();
+    //firmwareVersionMajorMinorString = Lang.format("$1$.$2$", firmwareVersion);
     //writeDebug("initialize - firmwareVersion: " + firmwareVersionMajorMinorString + " (as number:" + firmwareVersionString + ")");
 
     //Digits
@@ -95,21 +98,24 @@ class XTDetailedDistanceDataFieldView extends Ui.DataField {
     }
   }
 
-  // Display the value you computed here. This will be called
-  // once a second when the data field is visible.
   function onUpdate(dc) {
     // Get showLastLapp value
-    showLastLap = getShowLastLapProp();
+    showLastLap = Functions.getShowLastLapProp();
 
     //Digits
     zeroToOneDigits = App.Properties.getValue("zerotoone");
     oneToTenDigits = App.Properties.getValue("onetoten");
     tenToHundredDigits = App.Properties.getValue("tentohundred");
     hundredOnwardsDigits = App.Properties.getValue("hundredonwards");
+    hideLabel = App.Properties.getValue("hideLabel");
 
-    setDeviceSettingsDependentVariables();
-
-    var lapDistanceString = setDistStr(currentLapDistance);
+    var lapDistanceString = Functions.setDistStr(
+      currentLapDistance,
+      zeroToOneDigits,
+      oneToTenDigits,
+      tenToHundredDigits,
+      hundredOnwardsDigits
+    );
 
     width = dc.getWidth();
     height = dc.getHeight();
@@ -146,16 +152,16 @@ class XTDetailedDistanceDataFieldView extends Ui.DataField {
     // );
     var lastValuePosY = 0;
     // var combinedFontHeight = labelFontHeight + valueFontHeight + lastValueFontHeight;
-    var justification = getTextJustification();
-    var justificationLValue = getTextJustificationLValue();
-    var startPosX = getStartPosX(width);
+    var justification = Functions.getTextJustification(DataField);
+    var justificationLValue = Functions.getTextJustificationLValue(DataField);
+    var startPosX = Functions.getStartPosX(width, DataField);
     var valuePosY = 0;
 
-    if (isSingleFieldLayout()) {
+    if (Functions.isSingleFieldLayout(DataField)) {
       //writeDebug("**************");
       valueFont = Gfx.FONT_NUMBER_THAI_HOT;
       valueFontHeight = Gfx.getFontHeight(valueFont);
-    //   valueFontDimensions = dc.getTextDimensions(lapDistanceString, valueFont);
+      //   valueFontDimensions = dc.getTextDimensions(lapDistanceString, valueFont);
 
       valuePosY = height / 2;
       labelPosY = valuePosY - (labelFontHeight / 2 + valueFontHeight / 2);
@@ -184,7 +190,13 @@ class XTDetailedDistanceDataFieldView extends Ui.DataField {
         lastLapDistanceString =
           Ui.loadResource(lastLabLabelResource) +
           " " +
-          setDistStr(lastLapDistance);
+          Functions.setDistStr(
+            lastLapDistance,
+            zeroToOneDigits,
+            oneToTenDigits,
+            tenToHundredDigits,
+            hundredOnwardsDigits
+          );
         //writeDebug("isSingleFieldLayout - lastValuePosY = " + lastValuePosY);
         dc.drawText(
           startPosX,
@@ -197,9 +209,18 @@ class XTDetailedDistanceDataFieldView extends Ui.DataField {
       //writeDebug("**************");
     } else {
       //writeDebug("**************");
-      valueFont = getValueFont(dc, lapDistanceString);
+      valueFont = Functions.getValueFont(
+        dc,
+        lapDistanceString,
+        hideLabel,
+        showLastLap,
+        labelFont,
+        lastValueFont,
+        overrideSizing,
+        App
+      );
       valueFontHeight = Gfx.getFontHeight(valueFont);
-    //   valueFontDimensions = dc.getTextDimensions(lapDistanceString, valueFont);
+      //   valueFontDimensions = dc.getTextDimensions(lapDistanceString, valueFont);
 
       var obscurityFlags = DataField.getObscurityFlags();
       if (hideLabel == false || obscurityFlags == 7) {
@@ -265,7 +286,13 @@ class XTDetailedDistanceDataFieldView extends Ui.DataField {
         lastLapDistanceString =
           Ui.loadResource(lastLabLabelResource) +
           " " +
-          setDistStr(lastLapDistance);
+          Functions.setDistStr(
+            lastLapDistance,
+            zeroToOneDigits,
+            oneToTenDigits,
+            tenToHundredDigits,
+            hundredOnwardsDigits
+          );
         //writeDebug("isMultiFieldLayout - lastValuePosY = " + lastValuePosY);
         dc.drawText(
           startPosX,
@@ -278,8 +305,8 @@ class XTDetailedDistanceDataFieldView extends Ui.DataField {
       //writeDebug("**************");
     }
     //Debug info
-    if (debugMode == true) {
-      systemStats = Sys.getSystemStats();
+    //if (debugMode == true) {
+      //systemStats = Sys.getSystemStats();
       //writeDebug("debug info - system total memory bytes: " + systemStats.totalMemory.toString());
       //writeDebug("debug info - system free memory bytes: " + systemStats.freeMemory.toString());
       //writeDebug("debug info - system used memory bytes: " + systemStats.usedMemory.toString());
@@ -305,225 +332,25 @@ class XTDetailedDistanceDataFieldView extends Ui.DataField {
       //writeDebug("debug info - startPosX: " + startPosX);
       //writeDebug("debug info - devicePartNumber: " + devicePartNumber);
       //writeDebug("debug info - getObscurityFlags: " + DataField.getObscurityFlags());
-      //writeDebug("debug info - justification: " + getTextJustification());
+      //writeDebug("debug info - justification: " + getTextJustification(DataField));
       //writeDebug("-------------- end --------------");
-    }
+    //}
   }
 
-  function isSingleFieldLayout() {
-    return (
-      DataField.getObscurityFlags() ==
-      (OBSCURE_TOP | OBSCURE_LEFT | OBSCURE_BOTTOM | OBSCURE_RIGHT)
-    );
-  }
-
-  function getTextJustification() {
-    var justification;
-    var textCenter = Gfx.TEXT_JUSTIFY_CENTER | Gfx.TEXT_JUSTIFY_VCENTER;
-    //writeDebug("getTextJustification - textCenter = " + textCenter);
-    var textRight = Gfx.TEXT_JUSTIFY_RIGHT | Gfx.TEXT_JUSTIFY_VCENTER;
-    //writeDebug("getTextJustification - textRight = " + textRight);
-    var textLeft = Gfx.TEXT_JUSTIFY_LEFT | Gfx.TEXT_JUSTIFY_VCENTER;
-    //writeDebug("getTextJustification - textLeft = " + textLeft);
-    if (
-      DataField.getObscurityFlags() == 12 or
-      DataField.getObscurityFlags() == 6
-    ) {
-      justification = textLeft;
-    } else if (
-      DataField.getObscurityFlags() == 3 or
-      DataField.getObscurityFlags() == 9
-    ) {
-      justification = textRight;
-    } else {
-      justification = textCenter;
-    }
-    return justification;
-  }
-
-  function getTextJustificationLValue() {
-    var justification;
-    var textCenter = Gfx.TEXT_JUSTIFY_CENTER | Gfx.TEXT_JUSTIFY_VCENTER;
-    var textRight = Gfx.TEXT_JUSTIFY_RIGHT | Gfx.TEXT_JUSTIFY_VCENTER;
-    var textLeft = Gfx.TEXT_JUSTIFY_LEFT | Gfx.TEXT_JUSTIFY_VCENTER;
-    if (
-      DataField.getObscurityFlags() == 12 or
-      DataField.getObscurityFlags() == 6
-    ) {
-      justification = textLeft;
-    } else if (
-      DataField.getObscurityFlags() == 3 or
-      DataField.getObscurityFlags() == 9
-    ) {
-      justification = textRight;
-    } else {
-      justification = textCenter;
-    }
-    return justification;
-  }
-
-  function getStartPosX(width) {
-    var startPosX = 0;
-    var margin = Math.round((width / 100) * 2);
-
-    if (
-      DataField.getObscurityFlags() == 12 or
-      DataField.getObscurityFlags() == 6
-    ) {
-      startPosX = 0 + margin;
-    } else if (
-      DataField.getObscurityFlags() == 3 or
-      DataField.getObscurityFlags() == 9
-    ) {
-      startPosX = width - margin;
-    } else {
-      startPosX = width / 2;
-    }
-    return startPosX;
+  function onWorkoutStepComplete(
+    lastLapDistance,
+    onTimerLapDistance,
+    prevLapDistance
+  ) {
+    lastLapDistance = distance - prevLapDistance;
+    onTimerLapDistance = distance;
+    prevLapDistance = distance;
   }
 
   function onTimerLap() {
     lastLapDistance = distance - prevLapDistance;
     onTimerLapDistance = distance;
     prevLapDistance = distance;
-  }
-
-  function onWorkoutStepComplete() {
-    lastLapDistance = distance - prevLapDistance;
-    onTimerLapDistance = distance;
-    prevLapDistance = distance;
-  }
-
-  function getShowLastLapProp() {
-    var showLastLap_prop = App.Properties.getValue("showLastLap_prop");
-    if (null == showLastLap_prop) {
-      showLastLap = false;
-    } else {
-      showLastLap = showLastLap_prop;
-    }
-    return showLastLap;
-  }
-
-  function setDistStr(distance) {
-    var distStr;
-    if (distance > 0) {
-      var distanceKmOrMiles = distance / kmOrMileInMeters;
-      if (distanceKmOrMiles < 1) {
-        distStr = distanceKmOrMiles.format("%." + zeroToOneDigits + "f");
-      } else if (distanceKmOrMiles < 10) {
-        distStr = distanceKmOrMiles.format("%." + oneToTenDigits + "f");
-      } else if (distanceKmOrMiles < 100) {
-        distStr = distanceKmOrMiles.format("%." + tenToHundredDigits + "f");
-      } else {
-        distStr = distanceKmOrMiles.format("%." + hundredOnwardsDigits + "f");
-      }
-    } else {
-      if (zeroToOneDigits == 3) {
-        distStr = ZERO_DISTANCE3;
-      } else if (zeroToOneDigits == 2) {
-        distStr = ZERO_DISTANCE2;
-      } else if (zeroToOneDigits == 1) {
-        distStr = ZERO_DISTANCE1;
-      } else {
-        distStr = ZERO_DISTANCE;
-      }
-    }
-    return distStr;
-  }
-
-  function setDeviceSettingsDependentVariables() {
-    if (Sys.getDeviceSettings().distanceUnits == System.UNIT_METRIC) {
-      kmOrMileInMeters = 1000;
-    } else {
-      kmOrMileInMeters = 1610;
-    }
-  }
-
-  function getDevicePartNumber() {
-    var deviceSettings = Sys.getDeviceSettings();
-    // device part numbers come from ${SDKROOT}/bin/devices.xml
-    var partNumber = deviceSettings.partNumber;
-    return partNumber;
-  }
-
-  function getValueFont(dc, lapDistanceString) {
-    var height = dc.getHeight();
-    var width = dc.getWidth();
-    var valueFont = Gfx.FONT_NUMBER_THAI_HOT;
-    var valueFontHeight = Gfx.getFontHeight(valueFont);
-    var labelFontHeight = Gfx.getFontHeight(labelFont);
-    if (hideLabel == true) {
-      labelFontHeight = 0;
-    }
-    var lastValueFontHeight = Gfx.getFontHeight(lastValueFont);
-    if (showLastLap != true) {
-      lastValueFontHeight = 0;
-    }
-    var heightOversizeValue = 100; //For 15% oversize enter 115
-    var widthOversizeValue = 100; //For 20% oversize enter 120
-
-    if (overrideSizing == true) {
-      //writeDebug("getValueFont - overrideSizing = " + overrideSizing);
-      heightOversizeValue = App.Properties.getValue("heightoversizeoverride");
-      //writeDebug("getValueFont - heightoversizeoverride = " + heightOversizeValue);
-      widthOversizeValue = App.Properties.getValue("widthoversizeoverride");
-      //writeDebug("getValueFont - widthoversizeoverride = " + widthOversizeValue);
-    }
-
-    //writeDebug("getValueFont - screen height = " + height);
-    //writeDebug("getValueFont - screen width = " + width);
-    //writeDebug("getValueFont - initial value font before height check = " + valueFont);
-    //writeDebug("getValueFont - initial combined font height = " + (valueFontHeight + labelFontHeight + lastValueFontHeight));
-    if (
-      valueFontHeight + labelFontHeight + lastValueFontHeight >
-      height * (heightOversizeValue / 100)
-    ) {
-      while (
-        valueFontHeight + labelFontHeight + lastValueFontHeight >
-          height * (heightOversizeValue / 100) &&
-        valueFont >= 1
-      ) {
-        valueFont = valueFont - 1;
-        valueFontHeight = Gfx.getFontHeight(valueFont as Gfx.FontType);
-      }
-      //writeDebug("getValueFont - screen height " + (height * (heightOversizeValue / 100)) + " incl. " + (heightOversizeValue / 100) +  " oversize factor to small for " + (valueFontHeight + labelFontHeight + lastValueFontHeight));
-    }
-    //writeDebug("getValueFont - combined font height after height check = " + (valueFontHeight + labelFontHeight + lastValueFontHeight));
-    //writeDebug("getValueFont - value font after height check = " + valueFont);
-
-    var valueFontWidth = dc.getTextWidthInPixels(lapDistanceString, valueFont);
-    valueFontWidth = valueFontWidth * (widthOversizeValue / 100);
-    //writeDebug("getValueFont - value font width before width check = " + valueFontWidth);
-    if (
-      showLastLap != true or
-      valueFontWidth > width * (widthOversizeValue / 100)
-    ) {
-      while (
-        valueFontWidth > width * (widthOversizeValue / 100) &&
-        valueFont >= 1
-      ) {
-        valueFont = valueFont - 1;
-        valueFontWidth = dc.getTextWidthInPixels(lapDistanceString, valueFont);
-        valueFontWidth = valueFontWidth * (widthOversizeValue / 100);
-      }
-      //writeDebug("getValueFont - screen width " + (width * (widthOversizeValue / 100)) + " incl. " + (widthOversizeValue  / 100) +  " oversize factor to small for " + valueFontWidth);
-    }
-    //writeDebug("getValueFont - value font width after width check = " + valueFontWidth);
-    //writeDebug("getValueFont - value font after width check = " + valueFont);
-
-    //writeDebug("getValueFont - valueFont = " + valueFont);
-    //writeDebug("getValueFont - combinedFontHeight = " + (valueFontHeight + labelFontHeight + lastValueFontHeight) + " and width = " + valueFontWidth);
-    return valueFont;
-  }
-
-  function writeDebug(message) {
-    try {
-      if (debugMode == true) {
-        Sys.println(message);
-      }
-    } catch (ex) {
-      Sys.println("Failed to write debug message!");
-    }
   }
 }
 
