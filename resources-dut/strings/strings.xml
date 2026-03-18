@@ -9,7 +9,7 @@
 	<string id="onetoten">Decimalen van 1 tot 10 km/mijl</string>
 	<string id="tentohundred">Decimalen van 10 tot 100 km/mijl</string>
 	<string id="hundredonwards">Decimalen vanaf 100 km/mijl)</string>
-	<string id="overridesizeing">Pas scherm correctiefactor toe (Werkt alleen de weergave niet past of te klein is)</string>
+	<string id="overrideSizing">Pas scherm correctiefactor toe (Werkt alleen de weergave niet past of te klein is)</string>
 	<string id="widthoversizeoverride">Scherm correctie breedte (50% - 150%)</string>
 	<string id="heightoversizeoverride">Scherm correctie hoogte (50% - 150%)</string>
 	<string id="oversizeoverridepromptvalue">Waarde 50% tot 150% (standaard 100%)</string>

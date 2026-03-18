@@ -4,7 +4,7 @@
 	<property id="onetoten" type="number">3</property>
 	<property id="tentohundred" type="number">3</property>
 	<property id="hundredonwards" type="number">2</property>
-	<property id="overridesizeing" type="boolean">false</property>
+	<property id="overrideSizing" type="boolean">false</property>
 	<property id="widthoversizeoverride" type="number">100</property>
 	<property id="heightoversizeoverride" type="number">100</property>
 	<property id="hideLabel" type="boolean">false</property>

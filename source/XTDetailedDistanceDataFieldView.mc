@@ -8,7 +8,6 @@ class XTDetailedDistanceDataFieldView extends Ui.DataField {
   hidden var onTimerLapDistance = 0;
   hidden var distance = 0;
   hidden var kmOrMileInMeters = 1000;
-  hidden var distanceUnits = null;
   hidden const ZERO_DISTANCE3 = "0.000";
   hidden const ZERO_DISTANCE2 = "0.00";
   hidden const ZERO_DISTANCE1 = "0.0";
@@ -16,9 +15,12 @@ class XTDetailedDistanceDataFieldView extends Ui.DataField {
   hidden var lastLapDistance = 0;
   hidden var showLastLap = getShowLastLapProp();
   hidden var prevLapDistance = 0;
+  // Disabled: each hidden var below costs heap on all devices including low-memory ones
+  // like the Forerunner 230. Re-enable for device-specific debugging when targeting
+  // a device with sufficient memory.
   // hidden var screenHeight = 0;
   hidden var labelResource = Rez.Strings.label;
-  hidden var lastLabLabelResource = Rez.Strings.lastlaplabel;
+  hidden var lastLapLabelResource = Rez.Strings.lastlaplabel;
   // hidden var deviceSettings = Sys.getDeviceSettings();
   // hidden var version = deviceSettings.monkeyVersion;
   // hidden var versionString = Lang.format("$1$.$2$.$3$", version);
@@ -35,7 +37,12 @@ class XTDetailedDistanceDataFieldView extends Ui.DataField {
   hidden var lastValueFont = Gfx.FONT_XTINY;
   hidden var width = 0;
   hidden var height = 0;
-  hidden var overrideSizing = getPropertyValue("overridesizeing");
+  // Note: property key was corrected from "overridesizeing" to "overrideSizing" — users
+  // who had this enabled will need to re-enable it once after updating the app.
+  hidden var overrideSizing = getPropertyValue("overrideSizing");
+  // Disabled: debugMode and firmware/stats vars removed from class scope to save heap.
+  // Re-enable together with the writeDebug() function and the debug block in onUpdate()
+  // only when targeting a device with sufficient memory.
   //hidden var debugMode = getPropertyValue("debugmode");
   // hidden var firmwareVersion;
   // hidden var firmwareVersionString = "";
@@ -52,6 +59,7 @@ class XTDetailedDistanceDataFieldView extends Ui.DataField {
     // showLastLap = getShowLastLapProp();
     //writeDebug("initialize - showLastLap: " + showLastLap);
 
+    // Disabled: device/firmware detection removed to save heap on low-memory devices.
     // screenHeight = deviceSettings.getDeviceSettings().screenHeight;
     //writeDebug("initialize - screenHeight: " + screenHeight);
     //devicePartNumber = getDevicePartNumber();
@@ -63,6 +71,8 @@ class XTDetailedDistanceDataFieldView extends Ui.DataField {
     // firmwareVersionMajorMinorString = Lang.format("$1$.$2$", firmwareVersion);
     // //writeDebug("initialize - firmwareVersion: " + firmwareVersionMajorMinorString + " (as number:" + firmwareVersionString + ")");
 
+    // Disabled: digit settings moved to onUpdate() so they reflect settings changes
+    // without requiring an activity restart.
     //Digits
     // zeroToOneDigits = getPropertyValue("zerotoone");
     //writeDebug("initialize - zeroToOneDigits: " + zeroToOneDigits);
@@ -150,10 +160,15 @@ class XTDetailedDistanceDataFieldView extends Ui.DataField {
     var lastValuePosY = 0;
     // var combinedFontHeight = labelFontHeight + valueFontHeight + lastValueFontHeight;
     var justification = getTextJustification();
-    var justificationLValue = getTextJustificationLValue();
+    var justificationLValue = getTextJustification(); // same rule: last-lap text aligns with value text
     var startPosX = getStartPosX(width);
     var valuePosY = 0;
 
+    // Layout: calculate Y positions for label, value, and last-lap text.
+    // isSingleFieldLayout() means the field occupies the full screen (all edges obscured).
+    // In that case always use the largest font and centre everything vertically.
+    // Otherwise, use getValueFont() to find the largest font that fits, then adjust
+    // vertical positions based on the obscurity flag (quadrant) so text stays within bounds.
     if (isSingleFieldLayout()) {
       //writeDebug("**************");
       valueFont = Gfx.FONT_NUMBER_THAI_HOT;
@@ -185,7 +200,7 @@ class XTDetailedDistanceDataFieldView extends Ui.DataField {
       //writeDebug("isSingleFieldLayout - valuePosY = "+ valuePosY);
       if (showLastLap == true) {
         lastLapDistanceString =
-          Ui.loadResource(lastLabLabelResource) +
+          Ui.loadResource(lastLapLabelResource) +
           " " +
           setDistStr(lastLapDistance);
         //writeDebug("isSingleFieldLayout - lastValuePosY = " + lastValuePosY);
@@ -220,6 +235,8 @@ class XTDetailedDistanceDataFieldView extends Ui.DataField {
       lastValuePosY =
         valuePosY + (valueFontHeight / 2 + lastValueFontHeight / 2);
 
+      // Top quadrants (3=top-right, 6=top-left): stack text from the bottom of the field upward
+      // so content stays visible and doesn't get clipped at the top edge.
       if (obscurityFlags == 3 or obscurityFlags == 6) {
         //writeDebug("isMultiFieldLayout - Top Left/Right location");
         lastValuePosY = height - lastValueFontHeight / 2;
@@ -230,6 +247,8 @@ class XTDetailedDistanceDataFieldView extends Ui.DataField {
           lastValuePosY - (valueFontHeight / 2 + lastValueFontHeight / 2);
         labelPosY = valuePosY - (valueFontHeight / 2 + labelFontHeight / 2);
       }
+      // Bottom quadrants (9=bottom-right, 12=bottom-left): stack text from the top downward
+      // so content stays visible and doesn't get clipped at the bottom edge.
       if (obscurityFlags == 9 or obscurityFlags == 12) {
         //writeDebug("isMultiFieldLayout - Bottom Left/Right location");
         labelPosY = 0 + labelFontHeight / 2;
@@ -266,7 +285,7 @@ class XTDetailedDistanceDataFieldView extends Ui.DataField {
       //writeDebug("isMultiFieldLayout - valuePosY = "+ valuePosY);
       if (showLastLap == true) {
         lastLapDistanceString =
-          Ui.loadResource(lastLabLabelResource) +
+          Ui.loadResource(lastLapLabelResource) +
           " " +
           setDistStr(lastLapDistance);
         //writeDebug("isMultiFieldLayout - lastValuePosY = " + lastValuePosY);
@@ -280,7 +299,10 @@ class XTDetailedDistanceDataFieldView extends Ui.DataField {
       }
       //writeDebug("**************");
     }
-    //Debug info
+    // Debug info block — disabled to save heap on low-memory devices (e.g. Forerunner 230).
+    // To re-enable: uncomment debugMode var and systemStats var above, uncomment writeDebug()
+    // below, and restore this block. Also re-enable the debugmode property in settings.xml
+    // and properties.xml.
     //if (debugMode == true) {
     //systemStats = Sys.getSystemStats();
     //writeDebug("debug info - system total memory bytes: " + systemStats.totalMemory.toString());
@@ -320,6 +342,13 @@ class XTDetailedDistanceDataFieldView extends Ui.DataField {
     );
   }
 
+  // Returns the horizontal text justification based on where the field sits on the watchface.
+  // Obscurity flags encode which edges of the field are obscured by neighbouring fields:
+  //   6  = top-left quadrant  → field is on the left side  → left-align text
+  //   12 = bottom-left quadrant → field is on the left side → left-align text
+  //   3  = top-right quadrant → field is on the right side → right-align text
+  //   9  = bottom-right quadrant → field is on the right side → right-align text
+  //   other (incl. single full-screen field) → center text
   function getTextJustification() {
     var justification;
     var textCenter = Gfx.TEXT_JUSTIFY_CENTER | Gfx.TEXT_JUSTIFY_VCENTER;
@@ -329,13 +358,13 @@ class XTDetailedDistanceDataFieldView extends Ui.DataField {
     var textLeft = Gfx.TEXT_JUSTIFY_LEFT | Gfx.TEXT_JUSTIFY_VCENTER;
     //writeDebug("getTextJustification - textLeft = " + textLeft);
     if (
-      DataField.getObscurityFlags() == 12 or
-      DataField.getObscurityFlags() == 6
+      DataField.getObscurityFlags() == 12 or // bottom-left
+      DataField.getObscurityFlags() == 6     // top-left
     ) {
       justification = textLeft;
     } else if (
-      DataField.getObscurityFlags() == 3 or
-      DataField.getObscurityFlags() == 9
+      DataField.getObscurityFlags() == 3 or  // top-right
+      DataField.getObscurityFlags() == 9     // bottom-right
     ) {
       justification = textRight;
     } else {
@@ -344,39 +373,20 @@ class XTDetailedDistanceDataFieldView extends Ui.DataField {
     return justification;
   }
 
-  function getTextJustificationLValue() {
-    var justification;
-    var textCenter = Gfx.TEXT_JUSTIFY_CENTER | Gfx.TEXT_JUSTIFY_VCENTER;
-    var textRight = Gfx.TEXT_JUSTIFY_RIGHT | Gfx.TEXT_JUSTIFY_VCENTER;
-    var textLeft = Gfx.TEXT_JUSTIFY_LEFT | Gfx.TEXT_JUSTIFY_VCENTER;
-    if (
-      DataField.getObscurityFlags() == 12 or
-      DataField.getObscurityFlags() == 6
-    ) {
-      justification = textLeft;
-    } else if (
-      DataField.getObscurityFlags() == 3 or
-      DataField.getObscurityFlags() == 9
-    ) {
-      justification = textRight;
-    } else {
-      justification = textCenter;
-    }
-    return justification;
-  }
-
+  // Returns the X anchor point for drawText, matching the justification from getTextJustification().
+  // A 2% margin is applied on left/right edges to avoid text touching the field boundary.
   function getStartPosX(width) {
     var startPosX = 0;
     var margin = Math.round((width / 100) * 2);
 
     if (
-      DataField.getObscurityFlags() == 12 or
-      DataField.getObscurityFlags() == 6
+      DataField.getObscurityFlags() == 12 or // bottom-left
+      DataField.getObscurityFlags() == 6     // top-left
     ) {
       startPosX = 0 + margin;
     } else if (
-      DataField.getObscurityFlags() == 3 or
-      DataField.getObscurityFlags() == 9
+      DataField.getObscurityFlags() == 3 or  // top-right
+      DataField.getObscurityFlags() == 9     // bottom-right
     ) {
       startPosX = width - margin;
     } else {
@@ -477,6 +487,9 @@ class XTDetailedDistanceDataFieldView extends Ui.DataField {
     //writeDebug("getValueFont - screen width = " + width);
     //writeDebug("getValueFont - initial value font before height check = " + valueFont);
     //writeDebug("getValueFont - initial combined font height = " + (valueFontHeight + labelFontHeight + lastValueFontHeight));
+    // Height check: reduce font size until the combined height of label + value + last-lap text
+    // fits within the available field height (adjusted by the user-configured oversize factor).
+    // Font index 1 is the minimum — index 0 (FONT_XTINY) is reserved for the last-lap row.
     if (
       valueFontHeight + labelFontHeight + lastValueFontHeight >
       height * (heightOversizeValue / 100)
@@ -497,6 +510,9 @@ class XTDetailedDistanceDataFieldView extends Ui.DataField {
     var valueFontWidth = dc.getTextWidthInPixels(lapDistanceString, valueFont);
     valueFontWidth = valueFontWidth * (widthOversizeValue / 100);
     //writeDebug("getValueFont - value font width before width check = " + valueFontWidth);
+    // Width check: reduce font size until the distance string fits within the field width.
+    // Distance strings can vary greatly in pixel width (e.g. "0.000" vs "123.4"),
+    // so this must be measured at runtime per string rather than pre-calculated.
     if (
       showLastLap != true or
       valueFontWidth > width * (widthOversizeValue / 100)
@@ -519,6 +535,8 @@ class XTDetailedDistanceDataFieldView extends Ui.DataField {
     return valueFont;
   }
 
+  // writeDebug() — disabled to save heap on low-memory devices (e.g. Forerunner 230).
+  // Re-enable together with debugMode, systemStats, and the debug block in onUpdate().
   // function writeDebug(message) {
   //   try {
   //     if (debugMode == true) {

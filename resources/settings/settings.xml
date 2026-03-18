@@ -27,8 +27,8 @@
 		prompt="@Strings.digitsprompt">
         <settingConfig type="numeric" required="true" min="0" max="3" />
 	</setting>
-	<setting propertyKey="@Properties.overridesizeing"
-		title="@Strings.overridesizeing"
+	<setting propertyKey="@Properties.overrideSizing"
+		title="@Strings.overrideSizing"
 		prompt="@Strings.digitsprompt">
         <settingConfig type="boolean" required="false" />
 	</setting>

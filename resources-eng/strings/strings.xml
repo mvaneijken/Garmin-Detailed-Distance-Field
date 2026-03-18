@@ -9,7 +9,7 @@
 	<string id="onetoten">Decimal digits from 1 to 10 km/mile</string>
 	<string id="tentohundred">Decimal digits from 10 to 100 km/mile</string>
 	<string id="hundredonwards">Decimal digits from 100 km/mile</string>
-	<string id="overridesizeing">Use screen size correction factor (Works only when displayed values are too big or too small)</string>
+	<string id="overrideSizing">Use screen size correction factor (Works only when displayed values are too big or too small)</string>
 	<string id="widthoversizeoverride">Configure screen width correction (50% - 150%)</string>
 	<string id="heightoversizeoverride">Configure screen height correction (50% - 150%)</string>
 	<string id="oversizeoverridepromptvalue">Valid values between 50% and 150% (default 100%)</string>
