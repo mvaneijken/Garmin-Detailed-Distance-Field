@@ -3,7 +3,7 @@
 Guiding constraints (from the project owner):
 
 1. **Keep every device the SDK supports.** No device is dropped to make room for a feature.
-2. **Add features per capability**, gated by memory tier *and* API level (see `ANALYSIS.md` §6).
+2. **Add features per capability**, gated by *measured* memory and API level (see `ANALYSIS.md` §6). Every tier, including T0, gets every feature that fits.
 3. **Stay efficient**: no regression in peak memory on the 16 KB tier (T0).
 
 Each phase ends in a releasable version. Phases 0–1 deliberately ship no new user-facing features: they create the safety net that the feature phases depend on.
@@ -27,7 +27,7 @@ Each phase ends in a releasable version. Phases 0–1 deliberately ship no new u
 | 1.1 | Extract `Settings` (load once + `onSettingsChanged`), `Format`, `LapTracker`, `Layout` (see analysis §2). Remove `Background` class, duplicate justification function, commented code. |
 | 1.2 | Layout cache: recompute fonts/positions only on size/obscurity/settings/string-length change. |
 | 1.3 | Unit tests (`(:test)`) for Format, LapTracker, Settings sanitisation, Layout math; run in CI under `xvfb`. |
-| 1.4 | Fixes: mile = 1609.344 m (C1), `onTimerReset` (C2), lap-event de-duplication based on phase-0 findings (C3), settings null/clamp guards (C6), use `Application.getApp().getProperty()` for CIQ 1.x. |
+| 1.4 | Fixes: mile = 1609.344 m (C1), `onTimerReset` (C2), lap-event de-duplication based on phase-0 findings (C3), settings null/clamp guards (C6), truncate instead of round the last decimal (C7/D3), use `Application.getApp().getProperty()` for CIQ 1.x. |
 | 1.5 | Evaluate `-O 2z` and the Prettier Monkey C optimizer; keep whichever gives the lowest T0 peak memory. |
 
 Exit criterion: T0 peak memory ≤ baseline, all tests green.
@@ -40,37 +40,57 @@ Exit criterion: T0 peak memory ≤ baseline, all tests green.
 | 2.2 | Capture workout intensity via `getCurrentWorkoutStep()`; assign on lap close. | API ≥ 3.2.0 (`(:workoutinfo)`) |
 | 2.3 | Optional second-line content: previous lap distance (today) / lap time / lap pace — one setting, not three. | all |
 
-## Phase 3 — Power / Stryd v1 (→ 2.6.0)
+## Phase 3 — Stryd without the Stryd Zones field (→ 2.6.x)
+
+Goal (owner decision): read **all** Stryd metrics in this field, so the *Stryd Zones* field is no longer needed on the watch. No comparison with Garmin native running power.
+
+Metric availability by transport (details and evidence levels in `ANALYSIS.md` §9):
+
+| Metric | Source | Confidence |
+|---|---|---|
+| Power | ANT+ power profile → `Activity.Info.currentPower` (native pairing) or own `Ant.GenericChannel` | Strong |
+| Pace / speed, distance, cadence | ANT+ foot pod (SDM) → native `Activity.Info` when Stryd is the speed/distance source | Strong |
+| Ground contact time, vertical oscillation | ANT+ Running Dynamics profile → `AntPlus.RunningDynamics` (API 2.4.0) — only if Stryd broadcasts that profile | Hypothesis |
+| Form power, air power, leg spring stiffness | Stryd proprietary ANT+/BLE profile, no public specification | Unknown |
 
 | # | Item | Tier/API gate |
 |---|---|---|
-| 3.1 | Read `Activity.Info.currentPower`; show current, 3 s/10 s rolling and lap-average power as a selectable slot. | all tiers; rolling windows T1+ |
-| 3.2 | Lap average power stored in lap history (feeds phase 4). | T1+ |
-| 3.3 | Document user setup: pair Stryd as ANT+ power pod; implications for *Stryd Zones* and CIQ slot usage. | — |
-| 3.4 | Device validation: Stryd on fēnix 9 Pro and one older watch; confirm `currentPower` is non-null with Stryd and with native Garmin power only. | — |
+| 3.1 | **Spike (go/no-go):** capture what the owner's Stryd actually broadcasts: ANT+ device types/pages (ANT USB stick + ANTware/SimulANT+ or similar) and BLE services (nRF Connect). Output: table of profiles, pages, data and update rate. | — (on owner's hardware) |
+| 3.2 | Power via `Activity.Info.currentPower`; current, 3 s/10 s/30 s rolling, lap average. Stryd paired natively as power sensor. | all tiers; rolling windows T1+ |
+| 3.3 | Pace/cadence/distance via native foot-pod pairing (no code beyond selecting the metric). | all |
+| 3.4 | GCT / VO via `AntPlus.RunningDynamics`, if 3.1 shows that the Stryd broadcasts this profile. | API ≥ 2.4.0, T1+ |
+| 3.5 | Form power / air power / LSS via own `Ant.GenericChannel` decoder — **only if 3.1 shows they can be decoded reliably** and the legal/terms check passes. Fallback: these metrics remain available in Stryd PowerCenter through the pod's offline sync (no watch field needed). | T1+/T2 (measure) |
+| 3.6 | Record Stryd metrics to the FIT file via `FitContributor` so they reach Garmin Connect / third parties without Stryd Zones. Mind the 16-developer-field per-activity budget shared with other CIQ fields. | API ≥ 1.3.0, T1+ |
+| 3.7 | User documentation: pairing (power + foot pod), ANT ID, offline sync for PowerCenter, what Stryd Zones features are *not* replaced (zones sync, Stryd workouts). | — |
 
 ## Phase 4 — Lap bar chart background (→ 2.7.0)
 
+Owner decision: **bar height = lap distance.**
+
 | # | Item | Tier/API gate |
 |---|---|---|
-| 4.1 | Bar chart of the last N laps behind the value (metric: pace — or distance/power, setting). Fastest/slowest coloured; current lap as growing bar. | T1+ ; colour palette per display type (MIP/AMOLED) |
-| 4.2 | Workout mode: highlight laps by intensity (active vs. recovery); fastest/slowest computed only among same-intensity laps. | API ≥ 3.2.0 |
-| 4.3 | Only in layouts with enough height (single field, large half-screen); auto-disable in small fields. | all |
+| 4.1 | Bar chart of the last N laps behind the value; bar height = lap distance, current lap as a growing bar. Scale = longest lap in view. | all tiers where memory allows (measure on T0) |
+| 4.2 | Colour = pace rank: fastest / slowest lap highlighted. In workouts, ranking only among laps of the same intensity. | T0+ (pace needs lap duration) |
+| 4.3 | Workout mode: active vs. recovery visually distinct (fill vs. outline, or colour), via `WorkoutStepInfo.intensity`. | API ≥ 3.2.0 |
+| 4.4 | Only in layouts with enough height (single field, large half-screen); auto-disable in small fields. Palette per display type (MIP 8/64 colours, AMOLED). | all |
+
+Note: with fixed-distance auto-lap every completed bar has the same height; then the chart carries information only through colour and the growing current bar. That is inherent to the chosen metric.
 
 ## Phase 5 — Optional / evidence-driven
 
 Only start when a concrete need is confirmed:
 
-- Direct Stryd connection via `Ant.GenericChannel` (option B in analysis §9) — if native pairing is insufficient on target devices. T2+.
-- FIT recording of lap power/pace via `FitContributor` — mind the per-activity developer-field budget.
 - `Activity.SplitInfo` (API 5.2.2+) as native lap source of truth to handle lap undo.
+- BLE transport for Stryd (only if ANT+ is insufficient; data-field availability of `BluetoothLowEnergy` is unknown).
 - Additional languages.
 
 ---
 
-## Open decisions for the owner
+## Decisions (recorded 2026-11-21)
 
-1. Bar metric: pace, distance or power (or user setting)?
-2. Is T0 (fēnix 3 generation) frozen at the phase-1 feature set, or should each feature be attempted there when the budget allows?
-3. Rounding vs. truncation of the last decimal (C7).
-4. Is a Stryd + Garmin native power comparison a goal (requires option B) or is Stryd-only sufficient (option A)?
+| # | Question | Decision |
+|---|---|---|
+| D1 | Bar metric | Lap distance (colour carries pace rank / intensity). |
+| D2 | T0 (fēnix 3 generation) frozen? | No — every feature is attempted on every tier; gate only on measured memory and API level. |
+| D3 | Last-decimal rounding | Follow athletics (World Athletics / Atletiekunie) convention: never display more than was achieved → **truncate** (round down). See `ANALYSIS.md` C7. |
+| D4 | Stryd scope | All Stryd metrics without the Stryd Zones field; no Garmin-vs-Stryd comparison. |

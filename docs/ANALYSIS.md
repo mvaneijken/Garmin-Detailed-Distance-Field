@@ -75,7 +75,19 @@ Feature code above the 16 KB tier is isolated with build-time annotations (see �
 | C4 | Lap undo (newer watches allow undoing a lap) has no CIQ event. | Field's lap distance diverges from the native lap after an undo. | **[Strong]** (open Garmin feature request `onTimerLapUndo`). Mitigation: on API ≥ 5.2.2 investigate `Activity.SplitInfo` **[Unknown]** as a native source of truth. |
 | C5 | Multisport: no `onNextMultisportLeg` handling. | Unknown whether `elapsedDistance` resets per leg, which would yield negative lap distances. | **[Unknown]** — test with a triathlon/brick profile in the simulator. |
 | C6 | Settings are not sanitized; a `null` precision would produce format string `"%.nullf"`. | Crash risk on corrupted/unsynced settings. | **[Hypothesis]** (defaults exist, but nothing guards). |
-| C7 | `setDistStr` rounds (`%.3f`): 999.6 m shows `1.000` while still in the 0–1 band. | Cosmetic; displays distance not yet covered by ≤ 0.5 unit of the last digit. | **[Verified]**; decide truncate vs. round as a product decision. |
+| C7 | `setDistStr` **rounds** (`format("%.3f")`): at 999.6 m the field already shows `1.000`. | Displays distance not yet covered. Decision D3: truncate (see §3.1). | **[Verified]** |
+
+### 3.1 Rounding rule for the last decimal (decision D3)
+
+Athletics convention, which the Atletiekunie applies via the World Athletics rules, never credits more than was achieved. Field-event distances are recorded down to the whole centimetre below the measured distance; fully automatic times are rounded *up* to the next 1/100 s, and hand times to the next 1/10 s. **[Strong]**. These rules are widely cited in secondary sources, but this session could not open the current World Athletics *Technical Rules* PDF. Verify the rule numbers against the current edition before quoting them in user documentation.
+
+For a distance display the consistent equivalent is **truncation**: show the largest value with *d* decimals that does not exceed the covered distance.
+
+Implementation notes:
+
+- Do not use `format("%.nf")` — it rounds.
+- `Activity.Info.elapsedDistance` is a 32-bit `Float` (≈ 7 significant digits; the resolution at 42 km is ≈ 4 mm). Truncating a float that sits a hair below a boundary (e.g. 999.99994 for a true 1000 m) would show `0.999`. Use integer arithmetic on whole metres for metric: `m = distance.toNumber()`, `units = (m * 10^d) / 1000` (integer division), then insert the decimal point. For statute, use `(distance * 10^d / 1609.344).toNumber()`, plus a small epsilon (≈ 1e-6 of a unit).
+- Unit tests must cover the boundaries 999 / 1000 / 1001 m, 9999 / 10000 m, and 1 mi exactly.
 
 ---
 
@@ -169,24 +181,49 @@ Key implications:
 
 ---
 
-## 9. Feasibility: third-party sensors (Stryd)
+## 9. Feasibility: Stryd without the Stryd Zones field (decision D4)
 
-| Option | How | Pros | Cons / risks | Evidence |
-|---|---|---|---|---|
-| **A. Native power via `Activity.Info.currentPower`** | Pair Stryd on the watch as ANT+ *power pod*/power sensor; field reads `info.currentPower` in `compute()`. | No permissions, minimal code (fits T0), works with any standard power source. | Depends on pairing; Garmin's own wrist/HRM running power is reportedly **not** exposed via `currentPower`; firmware-specific bugs reported (e.g. FR965). | Stryd help centre: "connect Stryd as an ANT+ power pod" for third-party fields, no guarantee **[Strong]**; forum bug report on native power **[Strong]** |
-| **B. Direct ANT+ via `Ant.GenericChannel`** | Field opens its own ANT channel to the Stryd (power profile). | Independent of native pairing; can show Stryd and Garmin power side by side. | Needs `Ant` permission, more code/RAM (exclude from T0), channel search/pairing UX, Stryd ANT ID setting, no native FIT power. Stryd's proprietary profile (form power, LSS, etc.) is not publicly documented. Device type commonly used: 11 (bike power) — **[Hypothesis]**, verify against ANT+ profile. | Forum + SDK MoxyField sample pattern **[Strong]** |
-| **C. BLE via `BluetoothLowEnergy`** | Custom BLE GATT client. | Only option for BLE-only sensors. | API 3.1.0+; availability for *data fields* **[Unknown]**; more code, pairing complexity. | — |
+Goal: read all Stryd metrics in this field, so that *Stryd Zones* is no longer needed on the watch.
 
-Constraint to keep in mind: Stryd recommends running its own *Stryd Zones* field alongside third-party fields for PowerCenter sync. That consumes a CIQ slot, which partly defeats the "save CIQ slots" goal. Most watches allow 2 CIQ fields per activity; fēnix 8 advertises 4 but users report 2 effective in some cases, and the per-activity developer-FIT-field budget (16) is separate **[Strong]**.
+### 9.1 What Stryd exposes, per transport
 
-**Conclusion:** Stryd support is feasible. Start with option A (cheap, all tiers). Option B only if a concrete need appears that A cannot meet.
+| Metric | Transport / profile | CIQ access | Evidence |
+|---|---|---|---|
+| Power | ANT+ power profile (Stryd pairs as power sensor / "power pod") | `Activity.Info.currentPower` with native pairing; or own `Ant.GenericChannel` (device type 11 commonly used — **[Hypothesis]**) | Stryd help centre advises power-pod pairing for third-party fields **[Strong]** |
+| Speed/pace, distance, cadence | ANT+ Stride-Based Speed & Distance (foot pod) | Native `Activity.Info` (`currentSpeed`, `elapsedDistance`, `currentCadence`) when Stryd is the speed/distance source | **[Strong]** |
+| Ground contact time, vertical oscillation | ANT+ Running Dynamics profile (open since 2017) | `AntPlus.RunningDynamics` (class since API 2.4.0) | One secondary source (the5krunner, 2026) says Stryd uses the ANT+ Running Dynamics profile — **[Hypothesis]** until captured from the owner's pod |
+| Form power, air power, leg spring stiffness | Stryd proprietary profile (ANT+; Stryd reportedly allows three simultaneous ANT+ connections: power, foot pod, proprietary) | Only via own `Ant.GenericChannel` + decoder of an undocumented format | **[Unknown]**: no public specification found |
 
----
+### 9.2 Consequences
+
+- **Power, pace, distance and cadence: feasible on every tier.** They need little or no code, because they come through native pairing.
+- **GCT/VO: probably feasible** through the official CIQ `AntPlus.RunningDynamics` API, if the pod actually broadcasts that profile. This is cheap to verify (see roadmap 3.1).
+- **Form power, air power, LSS: the real risk.** They require decoding a proprietary protocol:
+  - The protocol can change with any Stryd firmware update.
+  - Stryd gives no interoperability guarantee.
+  - Their terms of use must be checked. I am not giving a legal opinion here; if this step is pursued, check the terms of use and EU interoperability rules.
+  - Memory: a generic ANT channel plus a decoder adds an estimated few kB. That is likely too much for T0 (16 KB), so measure it.
+- **PowerCenter does not require Stryd Zones.** The pod stores up to ~9 h of running data and uploads it to the Stryd app and PowerCenter via *offline sync* (Stryd help centre). Stryd warns this can create duplicates when Garmin Connect sync is also active **[Strong]**. So even if the proprietary metrics cannot be shown live, they are not lost.
+- **Features of Stryd Zones that this field does not replace:** zone sync from PowerCenter and Stryd workout import. Document this for users.
+- **FIT recording:** to get Stryd metrics into the Garmin FIT file without Stryd Zones, write them with `FitContributor`. This counts against the per-activity developer-field budget (16), which is shared with other CIQ fields.
+- **Slots:** most watches allow 2 CIQ fields per activity (fēnix 8 advertises 4; some users report 2 effective). Removing Stryd Zones frees one.
+
+### 9.3 Required evidence before building 3.4/3.5
+
+Capture what the owner's Stryd broadcasts:
+
+- **ANT+:** device types, channel periods, data pages and update rate. Use an ANT USB stick with a scanner tool.
+- **BLE:** GATT services and characteristics. Use nRF Connect.
+
+Record the results in `docs/stryd-capture.md`. This cannot be done from a cloud container; it needs the physical pod.
 
 ## 10. Feasibility: lap bar chart with workout highlighting
+
+Decision D1: **bar height = lap distance**. Colour carries pace rank (fastest/slowest) and, in workouts, intensity.
 
 - Lap history: a fixed-size ring buffer (e.g. 8–10 laps × distance, duration, intensity, optional avg power) costs a few hundred bytes — feasible on T1+; on T0 only after measuring.
 - Lap duration from `info.timerTime` at lap boundaries **[Strong]**; pace = duration / distance.
 - Workout intensity: `Activity.getCurrentWorkoutStep()` → `WorkoutStepInfo.intensity` (active / rest / warm-up / cool-down / recovery / interval) from API 3.2.0 **[Strong]**. Capture intensity *during* the step in `compute()` and assign it when the lap closes; whether `getCurrentWorkoutStep()` already returns the *next* step inside `onWorkoutStepComplete()` is **[Unknown]**.
-- Colour semantics: fastest/slowest among comparable laps (compare only same-intensity laps in workouts, otherwise recovery laps are always "slowest").
+- With fixed-distance auto-lap all completed bars are equal height; information is then carried only by colour and the growing current-lap bar.
+- Colour semantics: fastest/slowest (by pace) among comparable laps (compare only same-intensity laps in workouts, otherwise recovery laps are always "slowest").
 - Rendering cost: N `fillRectangle` calls behind the text — negligible; must keep text contrast (draw bars dimmed or in the lower band).
