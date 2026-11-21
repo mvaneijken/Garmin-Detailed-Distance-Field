@@ -27,7 +27,7 @@ Each phase ends in a releasable version. Phases 0–1 deliberately ship no new u
 | 1.1 | Extract `Settings` (load once + `onSettingsChanged`), `Format`, `LapTracker`, `Layout` (see analysis §2). Remove `Background` class, duplicate justification function, commented code. |
 | 1.2 | Layout cache: recompute fonts/positions only on size/obscurity/settings/string-length change. |
 | 1.3 | Unit tests (`(:test)`) for Format, LapTracker, Settings sanitisation, Layout math; run in CI under `xvfb`. |
-| 1.4 | Fixes: mile = 1609.344 m (C1), `onTimerReset` (C2), lap-event de-duplication based on phase-0 findings (C3), settings null/clamp guards (C6), use `Application.getApp().getProperty()` for CI 1.x. |
+| 1.4 | Fixes: mile = 1609.344 m (C1), `onTimerReset` (C2), lap-event de-duplication based on phase-0 findings (C3), settings null/clamp guards (C6), use `Application.getApp().getProperty()` for CIQ 1.x. |
 | 1.5 | Evaluate `-O 2z` and the Prettier Monkey C optimizer; keep whichever gives the lowest T0 peak memory. |
 
 Exit criterion: T0 peak memory ≤ baseline, all tests green.
