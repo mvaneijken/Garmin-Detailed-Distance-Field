@@ -1,0 +1,19 @@
+# Keeps the SHA-pinned actions in .github/workflows up to date.
+# tools/ci/check-action-pins.sh enforces the pinning; without this nothing would move the pins.
+# Dependabot pull requests are validated like any other: a maintainer comments /validate.
+version: 2
+updates:
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "ci"
+    labels:
+      - "dependencies"
+    groups:
+      github-actions:
+        patterns:
+          - "*"

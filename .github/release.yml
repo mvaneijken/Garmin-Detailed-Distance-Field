@@ -1,0 +1,17 @@
+# Categories for the release notes GitHub generates for the draft release (release.yml workflow).
+# Pull requests are sorted by label; edit the draft before publishing.
+changelog:
+  exclude:
+    labels:
+      - skip-changelog
+  categories:
+    - title: New features
+      labels: [enhancement, feature]
+    - title: Device support
+      labels: [devices]
+    - title: Bug fixes
+      labels: [bug]
+    - title: Build and CI
+      labels: [ci, dependencies]
+    - title: Other changes
+      labels: ["*"]

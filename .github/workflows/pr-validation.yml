@@ -1,0 +1,245 @@
+name: PR Validation
+
+# Same model as the Omada PowerShell module repositories:
+#   - A maintainer starts validation by commenting `/validate` on the pull request (after reading the
+#     change), or by dispatching this workflow on master with the PR number.
+#   - The result is reported as the commit status "PR Validation" on the PR head, which the
+#     protect-master ruleset requires before merge.
+#
+# Why not a plain `pull_request` trigger: the toolchain image is a PRIVATE package, and pull requests
+# from Dependabot or forks get a read-only token without access to it. Validation also runs PR code,
+# which a maintainer should have read first.
+#
+# Toolchain: CI never logs in to Garmin (the account uses 2FA). The SDK and device files come from
+# the private, digest-pinned image in .ciq-toolchain-image, built by the maintainer with
+# tools/toolchain/Publish-CiqToolchainImage.ps1. Builds are signed with a throwaway key generated in
+# the job; the store signing key is only used by release.yml.
+#
+# Runs on `issue_comment`, so GITHUB_SHA / github.ref always point at master, never at the PR being
+# validated. Everything that identifies the PR comes from needs.dispatch.outputs.head_sha.
+run-name: >-
+  ${{ github.event_name == 'issue_comment'
+  && format('PR Validation #{0} — {1}', github.event.issue.number, github.event.issue.title)
+  || (inputs.pr_number
+  && format('PR Validation #{0} — dispatched', inputs.pr_number)
+  || format('PR Validation — {0}', github.ref_name)) }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: 'Pull request to validate. Empty validates the commit the workflow is run on.'
+        required: false
+        type: string
+  issue_comment:
+    types: [created]
+
+concurrency:
+  group: pr-validation-${{ github.event.issue.number || inputs.pr_number || github.ref }}-${{ (github.event_name == 'issue_comment' && !startsWith(github.event.comment.body, '/validate')) && github.event.comment.id || 'validate' }}
+  cancel-in-progress: true
+
+# Every job declares its own permissions; a job-level block replaces this one.
+permissions: {}
+
+jobs:
+  dispatch:
+    name: Dispatch
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' || (github.event.issue.pull_request != null && startsWith(github.event.comment.body, '/validate'))
+    permissions:
+      # write: reacting to a PR comment maps to the pull-requests scope.
+      pull-requests: write
+      issues: write
+      statuses: write
+    outputs:
+      should_run: ${{ steps.resolve.outputs.should_run }}
+      head_sha: ${{ steps.resolve.outputs.head_sha }}
+    steps:
+      - name: Harden the runner (audit all outgoing network calls)
+        uses: step-security/harden-runner@ccd8616d44fd3846e67624a50d5aad6d37bf2d25 # v2.22.1
+        with:
+          egress-policy: audit
+
+      - name: Resolve trigger context
+        id: resolve
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        with:
+          script: |
+            if (context.eventName === 'workflow_dispatch') {
+              const prNumber = (context.payload.inputs?.pr_number ?? '').trim();
+              if (prNumber === '') {
+                core.setOutput('should_run', 'true');
+                core.setOutput('head_sha', context.sha);
+                return;
+              }
+              if (!/^[1-9][0-9]*$/.test(prNumber)) {
+                core.setFailed(`pr_number '${prNumber}' is not a pull request number.`);
+                core.setOutput('should_run', 'false');
+                return;
+              }
+              const dispatched = await github.rest.pulls.get({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: Number(prNumber)
+              });
+              if (dispatched.data.state !== 'open') {
+                core.setFailed(`Pull request #${prNumber} is ${dispatched.data.state}.`);
+                core.setOutput('should_run', 'false');
+                return;
+              }
+              core.setOutput('should_run', 'true');
+              core.setOutput('head_sha', dispatched.data.head.sha);
+              return;
+            }
+
+            const allowedAssociations = ['OWNER', 'MEMBER', 'COLLABORATOR'];
+            const association = context.payload.comment.author_association;
+            if (!allowedAssociations.includes(association)) {
+              core.warning(`Comment author association '${association}' is not authorized to trigger validation.`);
+              core.setOutput('should_run', 'false');
+              return;
+            }
+
+            const pr = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.issue.number
+            });
+            core.setOutput('should_run', 'true');
+            core.setOutput('head_sha', pr.data.head.sha);
+
+      - name: Set pending status
+        if: steps.resolve.outputs.should_run == 'true'
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        with:
+          script: |
+            await github.rest.repos.createCommitStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              sha: '${{ steps.resolve.outputs.head_sha }}',
+              state: 'pending',
+              context: 'PR Validation',
+              description: 'Validation running...',
+              target_url: `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`
+            });
+
+      - name: Acknowledge comment
+        if: github.event_name == 'issue_comment' && steps.resolve.outputs.should_run == 'true'
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        with:
+          script: |
+            await github.rest.reactions.createForIssueComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              comment_id: context.payload.comment.id,
+              content: 'rocket'
+            });
+
+  validate:
+    name: Validate
+    needs: dispatch
+    if: needs.dispatch.outputs.should_run == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    permissions:
+      contents: read
+      packages: read
+    steps:
+      - name: Harden the runner (audit all outgoing network calls)
+        uses: step-security/harden-runner@ccd8616d44fd3846e67624a50d5aad6d37bf2d25 # v2.22.1
+        with:
+          egress-policy: audit
+
+      - name: Checkout pull request head
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ needs.dispatch.outputs.head_sha }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Check branch is up to date with master
+        env:
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+        run: |
+          git fetch --no-tags origin "$DEFAULT_BRANCH"
+          if ! git merge-base --is-ancestor "origin/$DEFAULT_BRANCH" HEAD; then
+            echo "::error::This branch is behind '$DEFAULT_BRANCH'. Merge or rebase '$DEFAULT_BRANCH' into it and push again."
+            exit 1
+          fi
+          echo "Branch is up to date with $DEFAULT_BRANCH."
+
+      - name: Check action pins
+        run: bash tools/ci/check-action-pins.sh .
+
+      - name: Log in to ghcr.io (read the private toolchain image)
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ACTOR: ${{ github.actor }}
+        run: printf '%s' "$GH_TOKEN" | docker login ghcr.io --username "$ACTOR" --password-stdin
+
+      - name: Generate throwaway signing key
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/keys"
+          openssl genrsa -out "$RUNNER_TEMP/throwaway.pem" 4096
+          openssl pkcs8 -topk8 -inform PEM -outform DER -nocrypt \
+            -in "$RUNNER_TEMP/throwaway.pem" -out "$RUNNER_TEMP/keys/developer_key.der"
+          rm -f "$RUNNER_TEMP/throwaway.pem"
+          chmod a+r "$RUNNER_TEMP/keys/developer_key.der"
+
+      - name: Build
+        run: |
+          bash tools/ci/ciq-run.sh --mount "$RUNNER_TEMP/keys:/keys" -- \
+            bash tools/ci/build.sh --source . --out out --key /keys/developer_key.der
+
+      - name: Unit tests
+        run: |
+          bash tools/ci/ciq-run.sh --mount "$RUNNER_TEMP/keys:/keys" -- \
+            bash tools/ci/run-unit-tests.sh --source . --out out/tests --key /keys/developer_key.der --device fenix847mm
+
+      - name: Job summary
+        if: always()
+        run: |
+          if [ -f .ci-summary.md ]; then cat .ci-summary.md >> "$GITHUB_STEP_SUMMARY"; fi
+          docker logout ghcr.io || true
+
+      - name: Upload build output
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: validation-build
+          path: |
+            out/prg/
+            out/logs/
+            out/tests/
+          if-no-files-found: ignore
+          retention-days: 14
+
+  report-status:
+    name: Report status
+    needs: [dispatch, validate]
+    # !cancelled(): a superseded run must not overwrite the status the newer run is writing.
+    if: always() && !cancelled() && needs.dispatch.outputs.should_run == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      statuses: write
+    steps:
+      - name: Harden the runner (audit all outgoing network calls)
+        uses: step-security/harden-runner@ccd8616d44fd3846e67624a50d5aad6d37bf2d25 # v2.22.1
+        with:
+          egress-policy: audit
+
+      - name: Set final commit status
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        with:
+          script: |
+            const success = '${{ needs.validate.result }}' === 'success';
+            await github.rest.repos.createCommitStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              sha: '${{ needs.dispatch.outputs.head_sha }}',
+              state: success ? 'success' : 'failure',
+              context: 'PR Validation',
+              description: success ? 'Validation passed' : 'Validation failed',
+              target_url: `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`
+            });

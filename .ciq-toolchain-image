@@ -1,0 +1,2 @@
+# Toolchain image used by CI, pinned by digest. Written by tools/toolchain/Publish-CiqToolchainImage.ps1.
+# Must match: ghcr.io/mvaneijken/ciq-toolchain@sha256:<64 hex>

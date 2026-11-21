@@ -1,2 +1,7 @@
-﻿bin/**
+bin/
+dist/
+out/
 build/**/temp/**
+*.der
+*.pem
+.ci-summary.md
