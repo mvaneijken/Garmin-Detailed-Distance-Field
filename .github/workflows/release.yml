@@ -55,18 +55,30 @@ jobs:
 
       - name: Validate version
         id: version
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
           if ! [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
             echo "::error::'$VERSION' is not a SemVer version (x.y.z)."
             exit 1
           fi
+          retry='false'
           if git rev-parse -q --verify "refs/tags/$VERSION" >/dev/null; then
-            echo "::error::Tag '$VERSION' already exists."
-            exit 1
+            # Allow a re-run after a failed draft creation: same commit, and no release for the tag yet.
+            tag_commit="$(git rev-parse "refs/tags/$VERSION^{commit}")"
+            has_release="$(gh api --paginate "repos/$GITHUB_REPOSITORY/releases" --jq "[.[] | select(.tag_name == \"$VERSION\")] | length" | awk '{s+=$1} END {print s+0}')"
+            if [ "$tag_commit" = "$GITHUB_SHA" ] && [ "$has_release" -eq 0 ]; then
+              echo "::notice::Tag '$VERSION' already points at this commit and has no release; resuming."
+              retry='true'
+            else
+              echo "::error::Tag '$VERSION' already exists (commit $tag_commit, releases: $has_release)."
+              exit 1
+            fi
           fi
+          echo "retry=$retry" >> "$GITHUB_OUTPUT"
           # Existing tags follow the bare-number style (2.2.4 ... 2.3.1, and 2.3).
-          previous="$(git tag -l | grep -E '^[0-9]+\.[0-9]+(\.[0-9]+)?$' | sort -V | tail -n 1 || true)"
+          previous="$(git tag -l | grep -E '^[0-9]+\.[0-9]+(\.[0-9]+)?$' | grep -vxF "$VERSION" | sort -V | tail -n 1 || true)"
           if [ -n "$previous" ]; then
             highest="$(printf '%s\n%s\n' "$previous" "$VERSION" | sort -V | tail -n 1)"
             if [ "$highest" != "$VERSION" ]; then
@@ -127,6 +139,7 @@ jobs:
           docker logout ghcr.io || true
 
       - name: Create tag
+        if: steps.version.outputs.retry != 'true'
         run: |
           set -euo pipefail
           git config user.name 'github-actions[bot]'

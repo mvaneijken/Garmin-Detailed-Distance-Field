@@ -76,7 +76,8 @@ run_monkeyc() {
   count="$(grep -c 'WARNING' "$log" || true)"
   warnings_total=$((warnings_total + count))
   # Surface compiler warnings as annotations without failing the build (yet - see issue #6).
-  grep 'WARNING' "$log" | sort -u | head -n 50 | while IFS= read -r line; do
+  # grep exits 1 on a clean log; under errexit + pipefail that must not fail the build.
+  { grep 'WARNING' "$log" || true; } | sort -u | awk 'NR <= 50' | while IFS= read -r line; do
     echo "::warning::$line"
   done
 }

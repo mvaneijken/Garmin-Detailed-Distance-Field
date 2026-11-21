@@ -32,10 +32,13 @@ if ($null -eq (Get-Command -Name gh -ErrorAction SilentlyContinue)) {
     throw 'The GitHub CLI (gh) is required. Install it and sign in with: gh auth login'
 }
 
-$Existing = gh api --paginate "repos/$Repository/rulesets" | ConvertFrom-Json
+# Check the exit code before parsing: on failure gh prints no JSON, and ConvertFrom-Json would throw
+# first and hide the real cause.
+$ExistingJson = gh api --paginate "repos/$Repository/rulesets"
 if ($LASTEXITCODE -ne 0) {
     throw "Could not list the rulesets of '$Repository'. Admin rights on the repository are required."
 }
+$Existing = @(if ($ExistingJson) { $ExistingJson | ConvertFrom-Json })
 
 foreach ($File in (Get-ChildItem -Path $RulesetPath -Filter '*.json' -File | Sort-Object -Property Name)) {
     $Ruleset = Get-Content -LiteralPath $File.FullName -Raw | ConvertFrom-Json
