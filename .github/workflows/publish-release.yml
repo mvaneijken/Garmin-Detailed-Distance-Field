@@ -1,0 +1,124 @@
+name: Publish Release
+
+# Step 2 of 2 of a release (step 1 is release.yml).
+#
+# Makes a draft release public after approval. The job runs in the "release" environment; its
+# required reviewers (Settings > Environments > release) must approve before any step runs. Nothing
+# is rebuilt: the job publishes the exact package release.yml built and attached, after checking
+# (fail-closed) that
+#   - the release exists and is still a draft, and its tag is a SemVer x.y.z tag;
+#   - it has exactly one .iq and one .iq.sha256 asset, both uploaded by github-actions[bot];
+#   - the .iq bytes match both the SHA-256 GitHub recorded for the asset and the .sha256 file.
+#
+# The Connect IQ store has no upload API this project uses; the store upload stays a manual step,
+# listed in the job summary.
+
+run-name: Publish release ${{ inputs.tag }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag of the draft release to publish (e.g. 2.4.0).'
+        required: true
+        type: string
+
+concurrency:
+  group: publish-release
+  cancel-in-progress: false
+
+permissions: {}
+
+jobs:
+  publish:
+    name: Publish release
+    runs-on: ubuntu-latest
+    if: github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
+    environment: release
+    permissions:
+      contents: write
+    env:
+      TAG: ${{ inputs.tag }}
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+    steps:
+      - name: Harden the runner (audit all outgoing network calls)
+        uses: step-security/harden-runner@ccd8616d44fd3846e67624a50d5aad6d37bf2d25 # v2.22.1
+        with:
+          egress-policy: audit
+
+      - name: Verify draft release and package
+        run: |
+          set -euo pipefail
+          if ! [[ "$TAG" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::'$TAG' is not a SemVer release tag."
+            exit 1
+          fi
+
+          # Drafts are not returned by /releases/tags/{tag}; look them up in the release list.
+          release="$(gh api --paginate "repos/$GH_REPO/releases" --jq ".[] | select(.tag_name == \"$TAG\")")"
+          if [ -z "$release" ]; then
+            echo "::error::No release with tag '$TAG'."
+            exit 1
+          fi
+          if [ "$(jq -r '.draft' <<<"$release")" != 'true' ]; then
+            echo "::error::Release '$TAG' is not a draft (already published?)."
+            exit 1
+          fi
+
+          assets="$(jq -c '.assets' <<<"$release")"
+          iq_count="$(jq '[.[] | select(.name | endswith(".iq"))] | length' <<<"$assets")"
+          sha_count="$(jq '[.[] | select(.name | endswith(".iq.sha256"))] | length' <<<"$assets")"
+          if [ "$iq_count" -ne 1 ] || [ "$sha_count" -ne 1 ]; then
+            echo "::error::Expected exactly one .iq and one .iq.sha256 asset, found $iq_count and $sha_count."
+            exit 1
+          fi
+          foreign="$(jq -r '[.[] | select(.uploader.login != "github-actions[bot]") | .name] | join(", ")' <<<"$assets")"
+          if [ -n "$foreign" ]; then
+            echo "::error::Assets not uploaded by the release workflow: $foreign"
+            exit 1
+          fi
+
+          iq_name="$(jq -r '.[] | select(.name | endswith(".iq")) | .name' <<<"$assets")"
+          iq_id="$(jq -r '.[] | select(.name | endswith(".iq")) | .id' <<<"$assets")"
+          sha_id="$(jq -r '.[] | select(.name | endswith(".iq.sha256")) | .id' <<<"$assets")"
+          recorded_digest="$(jq -r '.[] | select(.name | endswith(".iq")) | .digest // ""' <<<"$assets")"
+
+          work="$RUNNER_TEMP/release"
+          mkdir -p "$work"
+          gh api -H 'Accept: application/octet-stream' "repos/$GH_REPO/releases/assets/$iq_id" > "$work/$iq_name"
+          gh api -H 'Accept: application/octet-stream' "repos/$GH_REPO/releases/assets/$sha_id" > "$work/$iq_name.sha256"
+
+          actual="$(sha256sum "$work/$iq_name" | cut -d' ' -f1)"
+          expected_file="$(cut -d' ' -f1 "$work/$iq_name.sha256")"
+          if [ "$actual" != "$expected_file" ]; then
+            echo "::error::SHA-256 of $iq_name ($actual) does not match its .sha256 file ($expected_file)."
+            exit 1
+          fi
+          if [ -z "$recorded_digest" ]; then
+            echo "::error::GitHub recorded no digest for $iq_name."
+            exit 1
+          fi
+          if [ "$recorded_digest" != "sha256:$actual" ]; then
+            echo "::error::SHA-256 of $iq_name does not match the digest GitHub recorded ($recorded_digest)."
+            exit 1
+          fi
+          echo "Verified $iq_name ($actual)."
+          echo "IQ_NAME=$iq_name" >> "$GITHUB_ENV"
+          echo "IQ_SHA256=$actual" >> "$GITHUB_ENV"
+
+      - name: Publish release
+        run: gh release edit "$TAG" --draft=false --latest
+
+      - name: Report publication
+        run: |
+          {
+            echo "## Published release $TAG"
+            echo ""
+            echo "Package: \`$IQ_NAME\` (SHA-256 \`$IQ_SHA256\`)"
+            echo ""
+            echo "### Manual step: Connect IQ store"
+            echo "1. Download \`$IQ_NAME\` from the release."
+            echo "2. Upload it as a new version in the Connect IQ developer dashboard."
+            echo "3. Use the release notes as the store's *What's new* text."
+          } >> "$GITHUB_STEP_SUMMARY"

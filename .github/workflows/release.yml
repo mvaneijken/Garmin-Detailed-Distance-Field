@@ -1,0 +1,155 @@
+name: Release
+
+# Step 1 of 2 of a release (step 2 is publish-release.yml).
+#
+# A maintainer runs this workflow on master with the new SemVer version. It
+#   - checks the version (x.y.z, higher than every existing release tag, tag not taken),
+#   - builds and validates exactly like PR Validation, but signed with the store signing key,
+#   - pushes the tag and creates a DRAFT GitHub release with generated release notes, the signed
+#     .iq and its SHA-256.
+#
+# A draft is only visible to users with write access and sends no notifications. Edit the release
+# notes on the Releases page, then run "Publish Release" (publish-release.yml), which waits for the
+# approval on the "release" environment before it makes the release public.
+
+run-name: Release ${{ inputs.version }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to release (SemVer x.y.z, e.g. 2.4.0). Becomes the tag name.'
+        required: true
+        type: string
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+permissions: {}
+
+jobs:
+  build:
+    name: Build and draft release
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    # Releases are cut from master only; the signing key secret is only read in this job.
+    if: github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
+    permissions:
+      contents: write
+    env:
+      VERSION: ${{ inputs.version }}
+      APP_NAME: Garmin-Detailed-Distance-Field
+    steps:
+      - name: Harden the runner (audit all outgoing network calls)
+        uses: step-security/harden-runner@ccd8616d44fd3846e67624a50d5aad6d37bf2d25 # v2.22.1
+        with:
+          egress-policy: audit
+
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Validate version
+        id: version
+        run: |
+          set -euo pipefail
+          if ! [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::'$VERSION' is not a SemVer version (x.y.z)."
+            exit 1
+          fi
+          if git rev-parse -q --verify "refs/tags/$VERSION" >/dev/null; then
+            echo "::error::Tag '$VERSION' already exists."
+            exit 1
+          fi
+          # Existing tags follow the bare-number style (2.2.4 ... 2.3.1, and 2.3).
+          previous="$(git tag -l | grep -E '^[0-9]+\.[0-9]+(\.[0-9]+)?$' | sort -V | tail -n 1 || true)"
+          if [ -n "$previous" ]; then
+            highest="$(printf '%s\n%s\n' "$previous" "$VERSION" | sort -V | tail -n 1)"
+            if [ "$highest" != "$VERSION" ]; then
+              echo "::error::'$VERSION' is not higher than the latest release tag '$previous'."
+              exit 1
+            fi
+          fi
+          echo "previous_tag=$previous" >> "$GITHUB_OUTPUT"
+          echo "Releasing $VERSION (previous tag: ${previous:-<none>})."
+
+      - name: Check action pins
+        run: bash tools/ci/check-action-pins.sh .
+
+      - name: Set up Java
+        uses: actions/setup-java@d1374f8ac74474200d16ef8ecee22c7ae7a51880 # v6.3.0
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Connect IQ SDK
+        uses: ./.github/actions/setup-connectiq
+        with:
+          manifest: manifest.xml
+          sdk-version-file: .ciq-sdk-version
+          font-devices: fenix847mm
+          agreement-hash: ${{ vars.CIQ_AGREEMENT_HASH }}
+          garmin-username: ${{ secrets.GARMIN_USERNAME }}
+          garmin-password: ${{ secrets.GARMIN_PASSWORD }}
+
+      - name: Write signing key
+        env:
+          CIQ_DEVELOPER_KEY: ${{ secrets.CIQ_DEVELOPER_KEY }}
+        run: |
+          set -euo pipefail
+          if [ -z "$CIQ_DEVELOPER_KEY" ]; then
+            echo "::error::Secret CIQ_DEVELOPER_KEY (base64 of the store developer_key.der) is not set. See docs/CI-CD.md."
+            exit 1
+          fi
+          umask 077
+          printf '%s' "$CIQ_DEVELOPER_KEY" | base64 --decode > "$RUNNER_TEMP/developer_key.der"
+
+      - name: Build (release, signed)
+        run: bash tools/ci/build.sh --source . --out dist --key "$RUNNER_TEMP/developer_key.der" --release --version "$VERSION"
+
+      - name: Remove signing key
+        if: always()
+        run: rm -f "$RUNNER_TEMP/developer_key.der"
+
+      - name: Unit tests
+        run: |
+          command -v xvfb-run >/dev/null || { sudo apt-get update -qq && sudo apt-get install -y -qq xvfb; }
+          openssl genrsa -out "$RUNNER_TEMP/t.pem" 4096
+          openssl pkcs8 -topk8 -inform PEM -outform DER -nocrypt -in "$RUNNER_TEMP/t.pem" -out "$RUNNER_TEMP/t.der"
+          bash tools/ci/run-unit-tests.sh --source . --out dist/tests --key "$RUNNER_TEMP/t.der" --device fenix847mm
+
+      - name: Create tag
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git tag -a "$VERSION" -m "Release $VERSION"
+          git push origin "refs/tags/$VERSION"
+
+      - name: Create GitHub release (draft)
+        id: gh_release
+        uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v3.0.3
+        with:
+          tag_name: ${{ inputs.version }}
+          name: ${{ env.APP_NAME }} v${{ inputs.version }}
+          files: |
+            dist/${{ env.APP_NAME }}-${{ inputs.version }}.iq
+            dist/${{ env.APP_NAME }}-${{ inputs.version }}.iq.sha256
+          draft: true
+          generate_release_notes: true
+          previous_tag: ${{ steps.version.outputs.previous_tag }}
+          fail_on_unmatched_files: true
+
+      - name: Report draft release
+        env:
+          RELEASE_URL: ${{ steps.gh_release.outputs.url }}
+        run: |
+          {
+            echo "## Draft release $VERSION created"
+            echo ""
+            echo "1. Review and edit the release notes: $RELEASE_URL"
+            echo "2. Run **Publish Release** with tag \`$VERSION\` and approve the \`release\` environment."
+          } >> "$GITHUB_STEP_SUMMARY"

@@ -171,7 +171,11 @@ Key implications:
 | `build/<version>/*.iq` binaries committed: 24 MB of history growth. Use GitHub Releases for artefacts. | **[Verified]** |
 | `manifest.xml` header says "generated, do not edit" but it is edited by hand / VS Code — fine, but sort/regenerate the product list from the SDK device list in CI to avoid drift. | **[Verified]** |
 
-### Recommended CI/CD (GitHub Actions, since the code lives on GitHub)
+### CI/CD (GitHub Actions)
+
+Implemented; see `docs/CI-CD.md`. The original recommendation is kept below for reference.
+
+#### Original recommendation
 
 1. **Setup:** install JDK + Connect IQ SDK + device files headless (community `connect-iq-sdk-manager-cli`; device download requires a Garmin developer login stored as secret) — cache the SDK directory.
 2. **Static checks:** `monkeyc` with `-l 2`/`-l 3` (type checking) and `-w` for every PR.

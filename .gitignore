@@ -1,2 +1,6 @@
-﻿bin/**
+bin/
+dist/
+out/
 build/**/temp/**
+*.der
+*.pem
