@@ -41,6 +41,17 @@ done
 command -v monkeyc >/dev/null || { echo "monkeyc is not on PATH" >&2; exit 2; }
 
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# Every manifest product needs its device files (they come from the toolchain image).
+devices_dir="${HOME}/.Garmin/ConnectIQ/Devices"
+missing=()
+while IFS= read -r product; do
+  [ -d "$devices_dir/$product" ] || missing+=("$product")
+done < <(grep -o 'iq:product id="[^"]*"' "$source_dir/manifest.xml" | sed 's/.*id="\([^"]*\)"/\1/')
+if [ "${#missing[@]}" -gt 0 ]; then
+  echo "::error file=manifest.xml::No device files for: ${missing[*]}. Download them with the SDK Manager and rebuild the toolchain image (tools/toolchain/Publish-CiqToolchainImage.ps1)."
+  exit 1
+fi
 jungle="$source_dir/monkey.jungle"
 mkdir -p "$out_dir/prg" "$out_dir/logs"
 

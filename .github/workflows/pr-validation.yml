@@ -6,16 +6,14 @@ name: PR Validation
 #   - The result is reported as the commit status "PR Validation" on the PR head, which the
 #     protect-master ruleset requires before merge.
 #
-# Why not a plain `pull_request` trigger: the build needs the Garmin developer login to download the
-# SDK device files (on a cache miss). Pull requests from Dependabot or forks get no secrets, and a
-# secret must never be handed to code nobody has reviewed yet.
+# Why not a plain `pull_request` trigger: the toolchain image is a PRIVATE package, and pull requests
+# from Dependabot or forks get a read-only token without access to it. Validation also runs PR code,
+# which a maintainer should have read first.
 #
-# Secret handling inside the run:
-#   - The setup action that uses the Garmin login is always taken from master ("trusted" checkout),
-#     never from the pull request, so a PR cannot change the code that sees the credentials.
-#   - That action deletes the login token and saves the cache before any PR code runs.
-#   - Builds are signed with a throwaway key generated in the job; the store signing key is only
-#     used by release.yml.
+# Toolchain: CI never logs in to Garmin (the account uses 2FA). The SDK and device files come from
+# the private, digest-pinned image in .ciq-toolchain-image, built by the maintainer with
+# tools/toolchain/Publish-CiqToolchainImage.ps1. Builds are signed with a throwaway key generated in
+# the job; the store signing key is only used by release.yml.
 #
 # Runs on `issue_comment`, so GITHUB_SHA / github.ref always point at master, never at the PR being
 # validated. Everything that identifies the PR comes from needs.dispatch.outputs.head_sha.
@@ -145,32 +143,21 @@ jobs:
     timeout-minutes: 45
     permissions:
       contents: read
+      packages: read
     steps:
       - name: Harden the runner (audit all outgoing network calls)
         uses: step-security/harden-runner@ccd8616d44fd3846e67624a50d5aad6d37bf2d25 # v2.22.1
         with:
           egress-policy: audit
 
-      # The code that handles the Garmin login comes from master, never from the pull request.
-      - name: Checkout trusted CI code (master)
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          ref: ${{ github.event.repository.default_branch }}
-          path: trusted
-          persist-credentials: false
-          sparse-checkout: |
-            .github/actions
-
       - name: Checkout pull request head
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ needs.dispatch.outputs.head_sha }}
-          path: src
           fetch-depth: 0
           persist-credentials: false
 
       - name: Check branch is up to date with master
-        working-directory: src
         env:
           DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
         run: |
@@ -182,39 +169,39 @@ jobs:
           echo "Branch is up to date with $DEFAULT_BRANCH."
 
       - name: Check action pins
-        run: bash src/tools/ci/check-action-pins.sh src
+        run: bash tools/ci/check-action-pins.sh .
 
-      - name: Set up Java
-        uses: actions/setup-java@d1374f8ac74474200d16ef8ecee22c7ae7a51880 # v6.3.0
-        with:
-          distribution: temurin
-          java-version: '17'
-
-      - name: Set up Connect IQ SDK
-        uses: ./trusted/.github/actions/setup-connectiq
-        with:
-          manifest: src/manifest.xml
-          sdk-version-file: src/.ciq-sdk-version
-          font-devices: fenix847mm
-          agreement-hash: ${{ vars.CIQ_AGREEMENT_HASH }}
-          garmin-username: ${{ secrets.GARMIN_USERNAME }}
-          garmin-password: ${{ secrets.GARMIN_PASSWORD }}
+      - name: Log in to ghcr.io (read the private toolchain image)
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ACTOR: ${{ github.actor }}
+        run: printf '%s' "$GH_TOKEN" | docker login ghcr.io --username "$ACTOR" --password-stdin
 
       - name: Generate throwaway signing key
         run: |
           set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/keys"
           openssl genrsa -out "$RUNNER_TEMP/throwaway.pem" 4096
           openssl pkcs8 -topk8 -inform PEM -outform DER -nocrypt \
-            -in "$RUNNER_TEMP/throwaway.pem" -out "$RUNNER_TEMP/throwaway.der"
+            -in "$RUNNER_TEMP/throwaway.pem" -out "$RUNNER_TEMP/keys/developer_key.der"
           rm -f "$RUNNER_TEMP/throwaway.pem"
+          chmod a+r "$RUNNER_TEMP/keys/developer_key.der"
 
       - name: Build
-        run: bash src/tools/ci/build.sh --source src --out out --key "$RUNNER_TEMP/throwaway.der"
+        run: |
+          bash tools/ci/ciq-run.sh --mount "$RUNNER_TEMP/keys:/keys" -- \
+            bash tools/ci/build.sh --source . --out out --key /keys/developer_key.der
 
       - name: Unit tests
         run: |
-          command -v xvfb-run >/dev/null || { sudo apt-get update -qq && sudo apt-get install -y -qq xvfb; }
-          bash src/tools/ci/run-unit-tests.sh --source src --out out/tests --key "$RUNNER_TEMP/throwaway.der" --device fenix847mm
+          bash tools/ci/ciq-run.sh --mount "$RUNNER_TEMP/keys:/keys" -- \
+            bash tools/ci/run-unit-tests.sh --source . --out out/tests --key /keys/developer_key.der --device fenix847mm
+
+      - name: Job summary
+        if: always()
+        run: |
+          if [ -f .ci-summary.md ]; then cat .ci-summary.md >> "$GITHUB_STEP_SUMMARY"; fi
+          docker logout ghcr.io || true
 
       - name: Upload build output
         if: always()
