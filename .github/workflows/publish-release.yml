@@ -122,3 +122,4 @@ jobs:
             echo "2. Upload it as a new version in the Connect IQ developer dashboard."
             echo "3. Use the release notes as the store's *What's new* text."
           } >> "$GITHUB_STEP_SUMMARY"
+
