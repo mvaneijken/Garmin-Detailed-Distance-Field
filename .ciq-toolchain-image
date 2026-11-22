@@ -1,2 +1,3 @@
 # Toolchain image used by CI, pinned by digest. Written by tools/toolchain/Publish-CiqToolchainImage.ps1.
-# Must match: ghcr.io/mvaneijken/ciq-toolchain@sha256:<64 hex>
+# Built 2026-11-22 17:20:10Z from SDK 9.3.0 (connectiq-sdk-lin-9.3.0-2026-10-20-95888f262.zip), 153 devices; tag ghcr.io/mvaneijken/ciq-toolchain:9.3.0-202611221718
+ghcr.io/mvaneijken/ciq-toolchain@sha256:bbd7f94d12cfb977bf344b7140a80240349a9b4ff57548b24116d5e58b036034
