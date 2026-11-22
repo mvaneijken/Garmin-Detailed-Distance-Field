@@ -34,7 +34,8 @@ RUN test -n "$SDK_FILENAME" && test -n "$SDK_SHA256" \
  && mkdir -p /opt/ciq/sdk \
  && unzip -q /tmp/sdk.zip -d /opt/ciq/sdk \
  && rm /tmp/sdk.zip \
- && test -x /opt/ciq/sdk/bin/monkeyc
+ && test -x /opt/ciq/sdk/bin/monkeyc \
+ && chmod -R a+rwX /opt/ciq/sdk
 
 ENV HOME=/home/ciq
 COPY ConnectIQ/ /home/ciq/.Garmin/ConnectIQ/
