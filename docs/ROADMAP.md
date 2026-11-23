@@ -18,7 +18,7 @@ Each phase ends in a releasable version. Phases 0–1 deliberately ship no new u
 | 0.2 | Repo hygiene: untrack `bin/` and fix `.gitignore` (**done**); move `build/*.iq` to GitHub Releases and create missing tags 2.3.2–2.3.5 (open). | `git ls-files bin build` empty; releases contain the `.iq` files. |
 | 0.3 | Device tier script: read `compiler.json` of all installed devices → CSV (id, CIQ version, datafield memory) + generated jungle `excludeAnnotations` lines. | Script in `tools/`, output committed, re-run on SDK update. |
 | 0.4 | Memory/CPU baseline: peak memory per tier device in the simulator (single + 4-field layout). | Table in `docs/` — the budget all later phases are measured against. |
-| 0.5 | Manual device test script for lap behaviour (C2–C5 in the analysis): auto lap, manual lap, workout distance step, lap-button step, final step, lap undo, save + new activity, multisport. | Results recorded for at least fēnix 9 Pro + one older device/simulator. |
+| 0.5 | Manual device test script for lap behaviour (C2–C5 in the analysis): auto lap, manual lap, workout distance step, lap-button step, final step, lap undo, save + new activity, multisport. | **Protocol written**: `docs/LAP-TEST-PROTOCOL.md`. Done when the results are recorded for at least fēnix 9 Pro + one older device/simulator. |
 
 ## Phase 1 — Refactor for efficiency and testability (→ 2.4.0)
 
