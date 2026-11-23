@@ -534,7 +534,7 @@ class XTDetailedDistanceDataFieldView extends Ui.DataField {
       return App.Properties.getValue(propertyName);
     }
     else {
-      return App.AppBase.getProperty(propertyName);
+      return App.getApp().getProperty(propertyName);
     }
   }
 }
