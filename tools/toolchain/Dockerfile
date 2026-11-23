@@ -42,5 +42,10 @@ COPY ConnectIQ/ /home/ciq/.Garmin/ConnectIQ/
 RUN printf '/opt/ciq/sdk/\n' > /home/ciq/.Garmin/ConnectIQ/current-sdk.cfg \
  && chmod -R a+rwX /home/ciq
 
+# The SDK finds the device files through Java's user.home, which Java takes from the passwd entry of
+# the uid and not from $HOME. CI runs the container as the runner uid, which has no passwd entry, so
+# without this the compiler reports "Invalid device id" and fails to process default.jungle.
+ENV JAVA_TOOL_OPTIONS="-Duser.home=/home/ciq"
+
 ENV PATH="/opt/ciq/sdk/bin:${PATH}"
 WORKDIR /work
