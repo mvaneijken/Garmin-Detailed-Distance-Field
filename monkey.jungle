@@ -1,1 +1,6 @@
 project.manifest = manifest.xml
+
+# The SDK default is `.\**.mc`: every .mc file below the project folder, recursively. That also picks up
+# copies of the sources in nested folders such as .claude/worktrees/*/source and fails the build with
+# "Redefinition of ..." errors. Only the source folder is part of the app.
+base.sourcePath = source
