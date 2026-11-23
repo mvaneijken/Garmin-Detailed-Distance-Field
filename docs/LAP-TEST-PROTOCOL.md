@@ -26,7 +26,7 @@ For each scenario write down the value shown by the field (F) and by the native 
 | S5 | C3 | Workout, final step | Finish the last step of a workout. | Previous lap shows the last step, or the field is unchanged if the event is not sent for the final step. | F and N values at the end; note whether the field updated. |
 | S6 | C4 | Lap undo | Press lap, then undo the lap (if the watch offers it). | Native lap distance continues the earlier lap. The field is expected to diverge (open Garmin request). | F and N current lap after the undo, and how far they differ. |
 | S7 | C2 | Save and start again | Run with at least two laps. Stop and save. Start a new activity of the same profile without leaving the data screen. | Current lap 0, previous lap empty. If old values appear, the instance survives and `onTimerReset` is needed. | F values within 10 s of starting. |
-| S8 | C5 | Multisport | Use a triathlon or multisport profile. Switch leg (for example run to bike) with the multisport transition. | Current lap restarts at 0 and never shows a negative value. | F current and previous lap after the transition; note any negative or huge value. |
+| S8 | C5 | Multisport | Use a triathlon or multisport profile. Switch leg (for example run to bike) with the multisport transition. | Current lap restarts at 0, never negative, and does not keep the distance of the previous leg. | F current and previous lap after the transition; note any negative value or a value as large as the previous leg. |
 
 ## Optional: simulator
 
@@ -57,5 +57,5 @@ Copy one row per scenario and device. Result codes: `ok` (as expected), `diff` (
 | S4 shows about 0 | Phase 1.4: de-duplicate lap events (one boundary, one lap). |
 | S5 shows no update at the end | Document it; consider reading the lap distance at `onTimerStop` or on the next lap. |
 | S7 shows old values | Phase 1.4: add `onTimerReset` to clear the lap state. |
-| S8 shows negative values | Phase 1.4: clamp the delta to 0 and handle the leg change. |
+| S8 shows a negative value (distance reset per leg) or a large leftover value (distance stays cumulative across legs) | Phase 1.4: handle the leg change explicitly (`onNextMultisportLeg`: restart the lap baseline) and clamp the lap distance to 0 or more. |
 | S6 diverges | Phase 5: evaluate `Activity.SplitInfo` (API 5.2.2+). |
