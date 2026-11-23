@@ -77,3 +77,6 @@ Updates:
 1.01: Minor layout changes.
 
 1.0: Initial release.
+
+## License
+This project is licensed under the [MIT License](LICENSE). Copyright (c) 2019-2026 Mark van Eijken.
