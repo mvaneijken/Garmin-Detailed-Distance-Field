@@ -32,12 +32,29 @@ if ($null -eq (Get-Command -Name gh -ErrorAction SilentlyContinue)) {
     throw 'The GitHub CLI (gh) is required. Install it and sign in with: gh auth login'
 }
 
+function Invoke-GitHubApi {
+    # Runs 'gh api' and returns its standard output. On failure it throws with the message gh printed,
+    # so the real cause (not signed in, no admin rights, network, invalid JSON body) is not hidden.
+    param(
+        [Parameter(Mandatory)]
+        [string[]]$ApiArgument,
+
+        [Parameter(Mandatory)]
+        [string]$FailureMessage
+    )
+
+    $Output = gh api @ApiArgument 2>&1
+    if ($LASTEXITCODE -ne 0) {
+        $Reason = ($Output | ForEach-Object { "$_" }) -join ' '
+        throw "$FailureMessage gh reported: $Reason"
+    }
+
+    return @($Output | Where-Object { $_ -isnot [System.Management.Automation.ErrorRecord] })
+}
+
 # Check the exit code before parsing: on failure gh prints no JSON, and ConvertFrom-Json would throw
 # first and hide the real cause.
-$ExistingJson = gh api --paginate "repos/$Repository/rulesets"
-if ($LASTEXITCODE -ne 0) {
-    throw "Could not list the rulesets of '$Repository'. Admin rights on the repository are required."
-}
+$ExistingJson = Invoke-GitHubApi -ApiArgument '--paginate', "repos/$Repository/rulesets" -FailureMessage "Could not list the rulesets of '$Repository'."
 $Existing = @(if ($ExistingJson) { $ExistingJson | ConvertFrom-Json })
 
 foreach ($File in (Get-ChildItem -Path $RulesetPath -Filter '*.json' -File | Sort-Object -Property Name)) {
@@ -50,14 +67,12 @@ foreach ($File in (Get-ChildItem -Path $RulesetPath -Filter '*.json' -File | Sor
 
     if ($Current.Count -eq 1) {
         if ($PSCmdlet.ShouldProcess("$Repository ruleset '$($Ruleset.name)' (id $($Current[0].id))", "Replace from $($File.Name)")) {
-            $null = gh api --method PUT "repos/$Repository/rulesets/$($Current[0].id)" --input $File.FullName
-            if ($LASTEXITCODE -ne 0) { throw "Replacing ruleset '$($Ruleset.name)' failed." }
+            $null = Invoke-GitHubApi -ApiArgument '--method', 'PUT', "repos/$Repository/rulesets/$($Current[0].id)", '--input', $File.FullName -FailureMessage "Replacing ruleset '$($Ruleset.name)' failed."
             "Replaced ruleset '{0}'." -f $Ruleset.name | Write-Host
         }
     }
     elseif ($PSCmdlet.ShouldProcess("$Repository ruleset '$($Ruleset.name)'", "Create from $($File.Name)")) {
-        $null = gh api --method POST "repos/$Repository/rulesets" --input $File.FullName
-        if ($LASTEXITCODE -ne 0) { throw "Creating ruleset '$($Ruleset.name)' failed." }
+        $null = Invoke-GitHubApi -ApiArgument '--method', 'POST', "repos/$Repository/rulesets", '--input', $File.FullName -FailureMessage "Creating ruleset '$($Ruleset.name)' failed."
         "Created ruleset '{0}'." -f $Ruleset.name | Write-Host
     }
 }
