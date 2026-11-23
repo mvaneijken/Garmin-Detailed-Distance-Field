@@ -39,10 +39,16 @@ param(
 
 $ErrorActionPreference = 'Stop'
 
-function Invoke-Native {
-    param([Parameter(Mandatory)][string]$FilePath, [Parameter(ValueFromRemainingArguments)][string[]]$Arguments)
-    & $FilePath @Arguments
-    if ($LASTEXITCODE -ne 0) { throw "'$FilePath $($Arguments -join ' ')' failed with exit code $LASTEXITCODE." }
+function Assert-NativeSuccess {
+    # Call native commands directly and run this right after. A wrapper that forwards the arguments
+    # (an advanced function with ValueFromRemainingArguments) lets PowerShell bind single-dash
+    # arguments such as '-q' or '-t' to its own common parameters and drop them silently.
+    param(
+        [Parameter(Mandatory)]
+        [string]$Description
+    )
+
+    if ($LASTEXITCODE -ne 0) { throw "'$Description' failed with exit code $LASTEXITCODE." }
 }
 
 foreach ($Tool in 'docker', 'gh') {
@@ -99,13 +105,14 @@ try {
     }
 
     $Tag = '{0}:{1}-{2:yyyyMMddHHmm}' -f $ImageName, $SdkVersion, (Get-Date).ToUniversalTime()
-    Invoke-Native docker build `
+    docker build `
         --file (Join-Path -Path $PSScriptRoot -ChildPath 'Dockerfile') `
         --build-arg "SDK_VERSION=$SdkVersion" `
         --build-arg "SDK_FILENAME=$SdkFileName" `
         --build-arg "SDK_SHA256=$SdkSha256" `
         --tag $Tag `
         $Staging
+    Assert-NativeSuccess -Description 'docker build'
 
     if ($NoPush) {
         "Built $Tag (not pushed)." | Write-Host
@@ -117,7 +124,8 @@ try {
         $Owner = $ImageName.Split('/')[1]
         gh auth token | docker login ghcr.io --username $Owner --password-stdin
         if ($LASTEXITCODE -ne 0) { throw 'docker login ghcr.io failed. Run: gh auth refresh -h github.com -s write:packages' }
-        Invoke-Native docker push $Tag
+        docker push $Tag
+        Assert-NativeSuccess -Description 'docker push'
         $Digest = (docker inspect --format '{{index .RepoDigests 0}}' $Tag).Trim()
         if ($Digest -notmatch '^ghcr\.io/.+@sha256:[0-9a-f]{64}$') { throw "Unexpected digest reference '$Digest'." }
 
