@@ -84,6 +84,25 @@ Only start when a concrete need is confirmed:
 - BLE transport for Stryd (only if ANT+ is insufficient; data-field availability of `BluetoothLowEnergy` is unknown).
 - Additional languages.
 
+## Phase 6 — Native text style on map pages (backlog, not scheduled)
+
+Reported 2026-11-23 on a fēnix 9 Pro 47mm (data screen background setting: black): on a map page the field is drawn with white text on the light map, so it is hard to read, while the native fields there use black text with a light halo (shading).
+
+Findings so far (from the SDK docs; not yet confirmed on a device):
+
+- `onUpdate` chooses the text colour from `DataField.getBackgroundColor()` (white on black, black otherwise). The API documents that call only as "the current Data Field background color", i.e. the colour configured for the data screen. It says nothing about the pixels behind the field, so on a map page a black screen setting yields white text on a light map. What the device actually returns on a map page is unverified and the simulator cannot show a map page.
+- The Connect IQ API has no "match the native style" call and no text outline: `Dc.setStroke` applies to primitives only. A halo has to be drawn by hand (the text repeated with 1 px offsets in the contrasting colour, then the real text on top).
+- The big digits already use `FONT_NUMBER_THAI_HOT`, the same family as the native large numeric fields. Other faces would need `Graphics.getVectorFont` (CIQ 4.0+), whose face names are device specific and not listed in the SDK files.
+
+| # | Item | Done when |
+|---|---|---|
+| 6.1 | On-device probe: show the value of `getBackgroundColor()` (and the obscurity flags) in the field on a map page, with the screen background set to black, white and automatic. | Values recorded in `docs/`. |
+| 6.2 | Settings: "Text colour" (Auto, Black, White) and "Halo" (on/off). Auto keeps today's behaviour unless 6.1 shows a better signal. | Settings load through the Phase 1 `Settings` class. |
+| 6.3 | Halo drawing in `Layout`/`Format` code paths, with the number of `drawText` calls per string chosen from a measured cost. | Peak memory and update time per tier within the Phase 0 baseline (D2: gate by measurement, never drop a device). |
+| 6.4 | Compare against the native look on a map page and adjust the halo width and colours. Evaluate vector fonts only if the digits still differ visibly. | Photo or screenshot comparison recorded; owner sign-off. |
+
+Depends on Phase 1 (settings loaded once, layout cache) and the Phase 0 memory baseline. It also helps Phase 4, because text over the bar chart needs the same legibility.
+
 ---
 
 ## Decisions (recorded 2026-11-21)
