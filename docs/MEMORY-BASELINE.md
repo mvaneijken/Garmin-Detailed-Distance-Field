@@ -30,7 +30,7 @@ Steps (the menu names can differ per SDK version; use the memory view of the sim
 2. Open the data field screen layout (single field, then four fields) and start a simulated activity so `onUpdate` runs.
 3. Add a lap or two (Simulation, timer lap) so the previous-lap string exists.
 4. Let it run for at least 60 seconds, then read the peak (high-water) memory from the memory view. Record the peak, not the current value.
-5. Repeat for each device and layout. Restart the simulator between devices.
+5. Repeat for each device and layout. Restart the simulator (or reload the app) before every single measurement, also when only the layout changes: the peak is a high-water mark, so a second layout measured in the same session would still show the larger peak of the first.
 
 Record the numbers here (bytes of peak memory; the limit is in the table above):
 
