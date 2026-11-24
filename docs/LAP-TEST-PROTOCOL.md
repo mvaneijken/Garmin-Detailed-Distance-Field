@@ -32,6 +32,29 @@ For each scenario write down the value shown by the field (F) and by the native 
 
 The Connect IQ simulator can drive a data field with simulated activity data and timer events (see its Simulation menu; the menu names differ per SDK version, and this protocol does not rely on them). It is not expected to reproduce workout step events or lap undo, so S3 to S6 stay device tests. Use it for S1, S2, S7 and for the older device (for example fenix3 or fenix5), and write down in the Notes column which events you could trigger.
 
+## Automation: what can and cannot be scripted
+
+The scenarios test two different things, and only one of them can run without a person and a watch.
+
+| Layer | Question | Automatable | How |
+|---|---|---|---|
+| 1. Lap logic | Given a sequence of events and distances, does the field show the expected current and previous lap (S1 to S8, "Expected" column)? | Yes, in CI. | After Phase 1.1 the lap state lives in `LapTracker`, which takes plain numbers and events. Each scenario becomes a `(:test)` function that feeds an event sequence (for example S4: step end, then the lap button at the same distance) and asserts the values. The SDK runs them by building with the unit-test flag and starting the simulator, then `monkeydo <prg> <device> -t` (the form `tools/ci/run-unit-tests.sh` uses; the Windows page of the SDK documentation, Core Topics, "Unit Testing", writes the flag as `/t`); CI runs them under `xvfb` (roadmap 1.3). |
+| 2. Firmware behaviour | Which events does the watch actually send in each scenario (findings C3, C4, C5), and with which distances? | No. Device only. | See below. |
+
+Why layer 2 cannot be scripted (evidence level: forum reports, not Garmin documentation):
+
+- The simulator cannot be driven from a script. Forum replies on automating it say it is not possible; the only reported route is OS-level key presses, which they call unreliable. The SDK contains an undocumented `shell` tool that I did not examine.
+- FIT playback is only a data source. It does not replay timer events or workout steps; lap events in the simulator come from its menu.
+- Reports exist that `onTimerLap` behaves differently on a real watch when a workout is loaded. That is exactly finding C3, so only a device can answer it.
+
+What can be made cheap on the device: a probe build plus a log and a FIT comparison, so nobody has to write values down by hand.
+
+1. **Probe build** (a build flavour or branch, never released): every callback (`onTimerStart`, `onTimerLap`, `onTimerStop`, `onTimerReset`, `onWorkoutStepComplete`, `onNextMultisportLeg`) prints one short line: `timerTime,event,elapsedDistance,currentLap,previousLap`. Print on events only, never on every `compute` or distance change: the lap distance changes continuously and would fill the small log within a minute. The values after an event are read by printing one extra line at the first `compute` after it.
+2. **Device log**: sideload the probe `.prg`, create an empty `GARMIN/APPS/LOGS/<PRG name>.TXT` on the watch, run one scenario per activity, then read the file. Limits from the Connect IQ developer FAQ (community wiki, not verified on the fēnix 9 Pro): the file is not created automatically, it rolls over to a `.BAK` file after about 5 KB, and heavy printing slows the watch. Keep lines short and print only on events.
+3. **Comparison**: a script reads the log and the lap table of the saved activity (the FIT file, parsed with a FIT tool such as the FIT SDK's `FitCSVTool`) and prints, per lap, the native lap distance next to the value the field showed. Its output is the Results table below. This script and the probe build are new work and are not written yet.
+
+Still manual, about 15 minutes per device: doing the activity (the runs, the lap button presses, the workout, the multisport switch).
+
 ## Results
 
 Copy one row per scenario and device. Result codes: `ok` (as expected), `diff` (differs, describe), `n/a` (not possible on this device).
