@@ -48,7 +48,38 @@ Findings:
 
 - The peak does not depend on the layout: single field and 4-field give the same value on every device. The 4-field column therefore repeats the single-field value; it was not measured separately to a different result.
 - The peak is lowest on fenix3 (9.8 KB) and between 11.1 and 12.9 KB on the other six devices, far below the limits of the larger tiers. The tight tier is T0: 9.8 KB of 16 KB, which leaves 6.2 KB of headroom for Phases 1 to 4.
-- The update time per `onUpdate` was not recorded. Phase 1.2 (layout cache) needs it; measure it with the simulator profiler before that item starts.
+- The update time is in the next section. It is a first reading, not yet a complete baseline.
+
+## Update time (simulator profiler)
+
+Measured by the project owner with the simulator profiler (File, View Profiler; Start, about 30 seconds, Stop), 30 calls of `compute` per capture. The profiler runs on the PC, so the times are simulator times, not watch times: use them to compare before and after a change, not as absolute numbers.
+
+**fenix3 (T0), layout shows the multi-field path** (the capture contains `isSingleFieldLayout`, `getStartPosX`, `getTextJustification`):
+
+| Function | Total (us) | Average (us) | Calls | Share of `onUpdate` |
+|---|---:|---:|---:|---:|
+| `onUpdate` (includes the rows below) | 60915 | 2030.5 | 30 | 100 % |
+| `WatchUi.loadResource` (the label strings) | 39349 | 655.8 | 60 | 65 % |
+| `Dc.drawText` | 9800 | 108.9 | 90 | 16 % |
+| `AppBase.getProperty` (settings, 6 per update) | 3505 | 19.5 | 180 | 6 % |
+| `System.getDeviceSettings` | 512 | 17.1 | 30 | 1 % |
+
+**fr965 (T3), capture shows the single-field path** (it contains `getValueFont`, the font-fit loop; the capture has no `onUpdate` row, so there is no total per update):
+
+| Function | Total (us) | Average (us) | Calls |
+|---|---:|---:|---:|
+| `getValueFont` (inclusive) | 399062 | 1662.8 | 240 |
+| `Dc.drawText` | 342604 | 3806.7 | 90 |
+| `WatchUi.loadResource` | 36617 | 610.3 | 60 |
+| `Properties.getValue` (settings) | 4536 | 25.2 | 180 |
+
+What it shows:
+
+- On T0, nearly two thirds of the update time is `loadResource`: the two label strings are loaded again on every update (about 1.3 ms of 2.0 ms). The same cost, about 1.2 ms per update, shows on the fr965. Loading them once (Phase 1.2 layout cache) is the largest single saving.
+- Reading the settings on every update (6 calls) costs about 6 % on T0. Loading them once (Phase 1.1 `Settings`) removes it.
+- On the fr965 in the single-field layout the font-fit loop and `drawText` dominate (3 `drawText` calls of about 3.8 ms each). Choosing the font only when the size or the text length changes (Phase 1.2) targets exactly that.
+
+Gaps, to close before Phase 1.2 starts: the two captures are different layouts and cannot be compared with each other. The gate device is T0, so capture fenix3 again in the other layout (single field) and note the layout with every capture. The fr965 capture needs its `onUpdate` row.
 
 ## Using the baseline
 
