@@ -64,22 +64,24 @@ Measured by the project owner with the simulator profiler (File, View Profiler; 
 | `AppBase.getProperty` (settings, 6 per update) | 3505 | 19.5 | 180 | 6 % |
 | `System.getDeviceSettings` | 512 | 17.1 | 30 | 1 % |
 
-**fr965 (T3), multi-field (4-field) layout** (inferred from the code: the capture contains `getValueFont`, the font-fit loop that runs only in the multi-field branch). The capture has no `onUpdate` row, so there is no total per update. Its 240 `getValueFont` calls for 30 `compute` calls (8 per update, where the code calls it once per update) are not explained and need a check against the raw capture:
+**fr965 (T3), multi-field (4-field) layout** (inferred from the code: the capture contains `getValueFont`, the font-fit loop that runs only in the multi-field branch). Three captures, 30 `compute` calls each (capture 3 with a couple of laps in it). The tool never shows an `onUpdate` row for the fr965 (not in any of the three), so there is no total per update; the rows below are the ones that exist. Totals in microseconds:
 
-| Function | Total (us) | Average (us) | Calls |
-|---|---:|---:|---:|
-| `getValueFont` (inclusive) | 399062 | 1662.8 | 240 |
-| `Dc.drawText` | 342604 | 3806.7 | 90 |
-| `WatchUi.loadResource` | 36617 | 610.3 | 60 |
-| `Properties.getValue` (settings) | 4536 | 25.2 | 180 |
+| Function | Capture 1 | Capture 2 | Capture 3 | Per update (range) | Calls |
+|---|---:|---:|---:|---:|---:|
+| `getValueFont` (inclusive) | 399062 | 466015 | 434362 | 13.3 to 15.5 ms | 240 |
+| `Dc.drawText` | 342604 | 403632 | 375882 | 11.4 to 13.5 ms | 90 |
+| `WatchUi.loadResource` | 36617 | 42467 | 38751 | 1.2 to 1.4 ms | 60 |
+| `Properties.getValue` (settings) | 4536 | 4443 | 4199 | 0.14 to 0.15 ms | 180 |
+
+The captures agree within about 17 %. The call count of `getValueFont` is 240 in all three, so it is not a measurement glitch: 8 per update, where the source calls it once per update. Hypothesis, not checked: the profiler counts the iterations of the font-fit loops as calls. `getValueFont` and `drawText` totals overlap in time (the font fit also measures text), so do not add them up.
 
 What it shows:
 
 - On T0, nearly two thirds of the update time is `loadResource`: the two label strings are loaded again on every update (about 1.3 ms of 2.0 ms). The same cost, about 1.2 ms per update, shows on the fr965. Loading them once (Phase 1.2 layout cache) is the largest single saving.
 - Reading the settings on every update (6 calls) costs about 6 % on T0. Loading them once (Phase 1.1 `Settings`) removes it.
-- On the fr965 in the multi-field layout the font-fit loop (`getValueFont`) and `drawText` dominate (3 `drawText` calls of about 3.8 ms each). Choosing the font only when the size or the text length changes (Phase 1.2) targets exactly that. The font-fit loop only exists in the multi-field path, so the single-field T0 numbers above do not include it.
+- On the fr965 in the multi-field layout the font-fit loop (`getValueFont`) and `drawText` dominate (3 `drawText` calls of about 3.8 to 4.5 ms each, 13 to 15 ms per update for `getValueFont`). Choosing the font only when the size or the text length changes (Phase 1.2) targets exactly that. The font-fit loop only exists in the multi-field path, so the single-field T0 numbers above do not include it.
 
-Gaps, to close before Phase 1.2 starts: the two captures are different layouts and cannot be compared with each other. The gate device is T0, so capture fenix3 again in the 4-field layout (the path with the font-fit loop, probably its most expensive one) and note the layout with every capture. The fr965 capture needs its `onUpdate` row, and its `getValueFont` call count needs an explanation.
+Gaps, to close before Phase 1.2 starts: the two captures are different layouts and cannot be compared with each other. The gate device is T0, so capture fenix3 again in the 4-field layout (the path with the font-fit loop, probably its most expensive one) and note the layout with every capture. The fr965 has no `onUpdate` row in any capture, so use the rows above for it. One capture with laps (capture 3) also lists `Background.initialize` (4 calls) and `Background.draw` (1 call), although nothing in `source/` or `resources/` creates a `Background`; which package that capture ran is not known.
 
 ## Using the baseline
 
