@@ -96,5 +96,5 @@ Not verified yet:
 | Item | Risk | How to confirm |
 |---|---|---|
 | Simulator runtime libraries in the image (`libwebkit2gtk-4.0-37` etc. on Ubuntu 22.04) | Unit tests cannot start the simulator. | The "Unit tests" step passes only because it finds no tests ("No (:test) functions found - unit tests skipped"), so the simulator has never started in CI. Run `docker run --rm -it <image> xvfb-run -a connectiq` locally, then the first PR with `(:test)` functions (roadmap 1.3). |
-| The "Release" workflow (`release.yml`) as a whole | It has never run: no signed `.iq` build, tag or draft release from CI yet. | Run "Release" once with a version, check the draft, then discard or publish it (roadmap 0.1 dry-run). |
+| The "Release" workflow (`release.yml`) as a whole | It has never run: no signed `.iq` build, tag or draft release from CI yet. | Run "Release" once with a version, check the draft, then publish it or discard it. The workflow pushes the tag before it creates the draft, so discarding means deleting the draft release and the remote tag (`git push origin :refs/tags/<version>`); otherwise the version stays tied to the dry-run commit (roadmap 0.1 dry-run). |
 | `gh api` download of draft-release assets | Redirect/permission behaviour. | First "Publish Release" run. |
