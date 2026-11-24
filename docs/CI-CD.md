@@ -78,15 +78,23 @@ Plan limits:
 - Required reviewers on environments, rulesets and the dependency review work on GitHub Free only in **public** repositories.
 - Secrets, environments and rulesets belong to the repository. Configure them on the final, public repository.
 
-## Not verified yet
+## Verification status
 
-None of the workflows has run yet. The authoring environment could not reach Garmin or Docker.
+Status as of 2026-11-24, from the `/validate` runs on pull requests (for example run 45419081211).
+
+Verified:
+
+| Item | Evidence |
+|---|---|
+| SDK zip layout (`bin/monkeyc` at the zip root) | The toolchain image was built and pushed, and `/validate` runs inside it. |
+| Device lookup via `$HOME/.Garmin/ConnectIQ/Devices` inside the container | The "Build" step compiles every product of `manifest.xml`. |
+| `GITHUB_TOKEN` pull of the private package | The step "Log in to ghcr.io (read the private toolchain image)" succeeds and the image runs. |
+| Compiler warning detection (`grep WARNING`) | The build log contains the compiler's `WARNING:` lines (64 in that run); `tools/ci/build.sh` surfaces them as annotations. |
+
+Not verified yet:
 
 | Item | Risk | How to confirm |
 |---|---|---|
-| SDK zip layout (`bin/monkeyc` at the zip root) | Image build fails. | First local image build (`-NoPush`). |
-| Simulator runtime libraries in the image (`libwebkit2gtk-4.0-37` etc. on Ubuntu 22.04) | Unit tests cannot start the simulator. | `docker run --rm -it <image> xvfb-run -a connectiq` locally, then the first PR with `(:test)` functions. |
-| Device lookup via `$HOME/.Garmin/ConnectIQ/Devices` inside the container | `monkeyc` does not find the devices. | First `/validate`. |
-| `GITHUB_TOKEN` pull of the private package after step 3 | Pull is denied. | First `/validate`. |
-| Compiler warning detection (`grep WARNING`) | Format may differ per SDK. | Build log of the first run. |
+| Simulator runtime libraries in the image (`libwebkit2gtk-4.0-37` etc. on Ubuntu 22.04) | Unit tests cannot start the simulator. | The "Unit tests" step passes only because it finds no tests ("No (:test) functions found - unit tests skipped"), so the simulator has never started in CI. Run `docker run --rm -it <image> xvfb-run -a connectiq` locally, then the first PR with `(:test)` functions (roadmap 1.3). |
+| The "Release" workflow (`release.yml`) as a whole | It has never run: no signed `.iq` build, tag or draft release from CI yet. | Run "Release" once with a version, check the draft, then publish it or discard it. The workflow pushes the tag before it creates the draft, so discarding means deleting the draft release and the remote tag (`git push origin :refs/tags/<version>`); otherwise the version stays tied to the dry-run commit (roadmap 0.1 dry-run). |
 | `gh api` download of draft-release assets | Redirect/permission behaviour. | First "Publish Release" run. |
