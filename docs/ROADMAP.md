@@ -103,6 +103,23 @@ Findings so far (from the SDK docs; not yet confirmed on a device):
 
 Depends on Phase 1 (settings loaded once, layout cache) and the Phase 0 memory baseline. It also helps Phase 4, because text over the bar chart needs the same legibility.
 
+## Phase 7 — Odd-layout devices and simulator overdraw (backlog, not scheduled)
+
+Reported 2026-11-24 from simulator runs by the project owner (screenshots, not yet confirmed on a device):
+
+- **Instinct E 40 mm (`instincte40mm`)**: the data field area is not laid out like on the other devices. In the simulator the field is a square area with the round subscreen overlapping its upper-right corner, and the value and the second line (`LL ...`) are drawn into the lower part and clipped on the right. The field has no idea about the subscreen: its layout decisions use only the size from the device context and `DataField.getObscurityFlags()`.
+- **How many devices**: the SDK device descriptors (`simulator.json`) of 9 of the 153 manifest devices contain a `subscreen`: `descentg1`, `instinct2`, `instinct2s`, `instinct2x`, `instinct3amoled45mm`, `instinct3amoled50mm`, `instinct3solar45mm`, `instincte40mm`, `instincte45mm`. Other shapes may need the same treatment; item 7.1 finds out.
+- **fr965 4-field layout**: in the simulator three of the four fields show digits drawn on top of each other and bold-looking labels; the fourth field and the single-field layout are drawn correctly. Hypothesis (from the code, not tested): `onUpdate` never clears its background (the `Background` drawable is unused, and the SDK sample data fields call `dc.clear()`), so a simulator that does not clear the field area between updates shows every update on top of the previous one, and repeated anti-aliased text looks bold. Since version 2.3.2 the field deliberately draws on a transparent background, so a plain `dc.clear()` could cost the transparency on map pages (Phase 6). It may be a simulator-only effect.
+
+| # | Item | Done when |
+|---|---|---|
+| 7.1 | Inventory: for each device with a `subscreen` (and any other device whose data field area is not a plain rectangle), record in the simulator the field size, the obscurity flags and where the subscreen overlaps the field. | Table in `docs/`. |
+| 7.2 | fr965 overlap: reproduce it in the simulator, then test the hypothesis with a temporary background clear. Check a real 4-field data screen on a fēnix 9 Pro or fr965 if possible. | Cause recorded: simulator only, or a field bug with a fix that keeps the transparent background where it matters. |
+| 7.3 | Layout rules for subscreen devices: the `Layout` class (Phase 1.1) works with a usable rectangle that excludes the subscreen overlap and places the value and the second line inside it. Gate by device capability (jungle annotation), never drop a device (D2). | Instinct devices render correctly in the simulator; peak memory and update time within the Phase 0 baseline. |
+| 7.4 | Keep one simulator screenshot per odd-layout device in `docs/` as a regression reference. | Screenshots committed. |
+
+Depends on Phase 1 (`Layout`, layout cache) and the Phase 0 baseline. Item 7.2 does not depend on Phase 1 and can run any time.
+
 ---
 
 ## Decisions (recorded 2026-11-21)
