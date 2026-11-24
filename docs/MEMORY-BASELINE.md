@@ -73,7 +73,7 @@ Measured by the project owner with the simulator profiler (File, View Profiler; 
 | `WatchUi.loadResource` | 36617 | 42467 | 38751 | 1.2 to 1.4 ms | 60 |
 | `Properties.getValue` (settings) | 4536 | 4443 | 4199 | 0.14 to 0.15 ms | 180 |
 
-The captures agree within about 17 %. The call count of `getValueFont` is 240 in all three, so it is not a measurement glitch: 8 per update, where the source calls it once per update. Hypothesis, not checked: the profiler counts the iterations of the font-fit loops as calls. `getValueFont` and `drawText` totals overlap in time (the font fit also measures text), so do not add them up.
+The captures agree within about 17 %. The call count of `getValueFont` is 240 in all three, so it is not a measurement glitch: 8 per update, where the source calls it once per update. Hypothesis, not checked: the profiler counts the iterations of the font-fit loops as calls. In the source `getValueFont` only measures fonts and text and returns before `drawText` is called, so the rows do not contain each other and can be added: about 26 to 30 ms per update (`getValueFont` + `drawText` + `loadResource`), simulator time, without the time `onUpdate` spends in its own code. The time inside `getValueFont` is almost all in callees that the tool does not list (the listed callees add up to about 1 ms), probably `Dc.getTextWidthInPixels`.
 
 What it shows:
 
