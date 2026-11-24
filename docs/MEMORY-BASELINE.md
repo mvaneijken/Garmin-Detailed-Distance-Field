@@ -54,7 +54,7 @@ Findings:
 
 Measured by the project owner with the simulator profiler (File, View Profiler; Start, about 30 seconds, Stop), 30 calls of `compute` per capture. The profiler runs on the PC, so the times are simulator times, not watch times: use them to compare before and after a change, not as absolute numbers.
 
-**fenix3 (T0), layout shows the multi-field path** (the capture contains `isSingleFieldLayout`, `getStartPosX`, `getTextJustification`):
+**fenix3 (T0), single-field layout** (inferred from the code: this capture has no `getValueFont`, which `onUpdate` calls only when `isSingleFieldLayout()` is false):
 
 | Function | Total (us) | Average (us) | Calls | Share of `onUpdate` |
 |---|---:|---:|---:|---:|
@@ -64,7 +64,7 @@ Measured by the project owner with the simulator profiler (File, View Profiler; 
 | `AppBase.getProperty` (settings, 6 per update) | 3505 | 19.5 | 180 | 6 % |
 | `System.getDeviceSettings` | 512 | 17.1 | 30 | 1 % |
 
-**fr965 (T3), capture shows the single-field path** (it contains `getValueFont`, the font-fit loop; the capture has no `onUpdate` row, so there is no total per update):
+**fr965 (T3), multi-field (4-field) layout** (inferred from the code: the capture contains `getValueFont`, the font-fit loop that runs only in the multi-field branch). The capture has no `onUpdate` row, so there is no total per update. Its 240 `getValueFont` calls for 30 `compute` calls (8 per update, where the code calls it once per update) are not explained and need a check against the raw capture:
 
 | Function | Total (us) | Average (us) | Calls |
 |---|---:|---:|---:|
@@ -77,9 +77,9 @@ What it shows:
 
 - On T0, nearly two thirds of the update time is `loadResource`: the two label strings are loaded again on every update (about 1.3 ms of 2.0 ms). The same cost, about 1.2 ms per update, shows on the fr965. Loading them once (Phase 1.2 layout cache) is the largest single saving.
 - Reading the settings on every update (6 calls) costs about 6 % on T0. Loading them once (Phase 1.1 `Settings`) removes it.
-- On the fr965 in the single-field layout the font-fit loop and `drawText` dominate (3 `drawText` calls of about 3.8 ms each). Choosing the font only when the size or the text length changes (Phase 1.2) targets exactly that.
+- On the fr965 in the multi-field layout the font-fit loop (`getValueFont`) and `drawText` dominate (3 `drawText` calls of about 3.8 ms each). Choosing the font only when the size or the text length changes (Phase 1.2) targets exactly that. The font-fit loop only exists in the multi-field path, so the single-field T0 numbers above do not include it.
 
-Gaps, to close before Phase 1.2 starts: the two captures are different layouts and cannot be compared with each other. The gate device is T0, so capture fenix3 again in the other layout (single field) and note the layout with every capture. The fr965 capture needs its `onUpdate` row.
+Gaps, to close before Phase 1.2 starts: the two captures are different layouts and cannot be compared with each other. The gate device is T0, so capture fenix3 again in the 4-field layout (the path with the font-fit loop, probably its most expensive one) and note the layout with every capture. The fr965 capture needs its `onUpdate` row, and its `getValueFont` call count needs an explanation.
 
 ## Using the baseline
 
