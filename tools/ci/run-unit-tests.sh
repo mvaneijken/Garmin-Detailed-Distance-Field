@@ -1,9 +1,8 @@
 #!/usr/bin/env bash
 # Runs the Connect IQ unit tests ((:test) annotated functions) in the simulator.
 #
-# Skips cleanly while the code base has no tests yet (roadmap phase 1 adds them).
-# EXPERIMENTAL: running the simulator headless under Xvfb on GitHub-hosted Ubuntu runners has not
-# been verified yet; the first run with real tests must confirm the required system packages.
+# Skips cleanly when the code base has no (:test) functions.
+# The simulator runs headless under Xvfb in the toolchain image (verified locally with this script).
 #
 # Usage: tools/ci/run-unit-tests.sh --source <dir> --out <dir> --key <key.der> --device <id>
 set -euo pipefail
@@ -33,15 +32,19 @@ monkeyc -f "$source_dir/monkey.jungle" -d "$device" -o "$test_prg" -y "$key_file
 
 log="$out_dir/unit-test-$device.log"
 # The simulator must be running before monkeydo can load the program into it.
+# monkeydo exits with status 1 even when every test passed (SDK 9.3.0, Linux), so its exit status
+# is ignored: the verdict is the result line it prints ("PASSED (passed=..)" or "FAILED (..)").
 xvfb-run --auto-servernum bash -c "
   connectiq &
   sim_pid=\$!
   sleep 15
-  monkeydo '$test_prg' '$device' -t > '$log' 2>&1
-  status=\$?
+  monkeydo '$test_prg' '$device' -t > '$log' 2>&1 || true
   kill \$sim_pid || true
-  exit \$status
-" || { cat "$log"; echo "::error::Unit tests failed on $device"; exit 1; }
+" || true
 
 cat "$log"
 printf '\n## Unit tests (%s)\n\n```\n%s\n```\n' "$device" "$(tail -n 40 "$log")" >> "$summary"
+if ! grep -q '^PASSED (' "$log"; then
+  echo "::error::Unit tests failed on $device (no PASSED result line in the output above)"
+  exit 1
+fi
