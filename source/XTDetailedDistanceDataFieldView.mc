@@ -21,7 +21,7 @@ class XTDetailedDistanceDataFieldView extends Ui.DataField {
     layout = new Layout();
     labelText = Ui.loadResource(Rez.Strings.label);
     lastLapLabelText = Ui.loadResource(Rez.Strings.lastlaplabel);
-    readUnit();
+    refreshUnit();
     buildLastLapText();
   }
 
@@ -35,8 +35,6 @@ class XTDetailedDistanceDataFieldView extends Ui.DataField {
   // Called when the size or the obscurity of the draw context changes.
   function onLayout(dc) {
     layout.invalidate();
-    readUnit();
-    buildLastLapText();
   }
 
   // The given info object contains all the current workout
@@ -50,6 +48,8 @@ class XTDetailedDistanceDataFieldView extends Ui.DataField {
   // Display the value you computed here. This will be called
   // once a second when the data field is visible.
   function onUpdate(dc) {
+    // The device unit can change while the field runs and no event reports it.
+    refreshUnit();
     var lapDistanceString = Format.distanceString(
       lap.currentLap,
       unitMeters,
@@ -115,11 +115,15 @@ class XTDetailedDistanceDataFieldView extends Ui.DataField {
       Format.distanceString(lap.previousLap, unitMeters, settings);
   }
 
-  hidden function readUnit() {
+  // Reads the device unit; the "LL" text is rebuilt only when the unit changed.
+  hidden function refreshUnit() {
+    var meters = 1610;
     if (Sys.getDeviceSettings().distanceUnits == System.UNIT_METRIC) {
-      unitMeters = 1000;
-    } else {
-      unitMeters = 1610;
+      meters = 1000;
+    }
+    if (meters != unitMeters) {
+      unitMeters = meters;
+      buildLastLapText();
     }
   }
 }
