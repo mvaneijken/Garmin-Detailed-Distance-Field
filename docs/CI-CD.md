@@ -91,6 +91,7 @@ Verified:
 | `GITHUB_TOKEN` pull of the private package | The step "Log in to ghcr.io (read the private toolchain image)" succeeds and the image runs. |
 | Compiler warning detection (`grep WARNING`) | The build log contains the compiler's `WARNING:` lines (64 in that run); `tools/ci/build.sh` surfaces them as annotations. |
 | "Release" workflow (`release.yml`) | Dry run with version 2.3.6 on 2026-11-24 (run 45455158137): version check, signing key, signed build, tag and draft release all succeeded; the draft held the `.iq` and `.sha256` plus generated notes. |
+| Simulator and unit tests in the toolchain image | `tools/ci/run-unit-tests.sh` ran inside the pinned image on the maintainer's machine (Docker Desktop, `xvfb-run`, device `fenix847mm`): the simulator starts, 16 tests pass, and a deliberately failing test makes the script exit 1. The library set in the Dockerfile is sufficient. `monkeydo -t` exits with status 1 even when all tests pass (SDK 9.3.0, Linux), so the script judges the printed `PASSED (...)` line. The same step ran in GitHub Actions on the first PR with tests (pull request 18, run 45602940812): 16 tests passed. |
 | Download of draft-release assets with `gh api` | The two assets of the dry-run draft were downloaded with the octet-stream header and the SHA-256 matched. |
 
 The dry run was discarded afterwards. The workflow pushes the tag before it creates the draft, so discarding a dry run means deleting the draft release and the remote tag (`git push origin :refs/tags/<version>`); otherwise the version stays tied to the dry-run commit.
@@ -99,6 +100,5 @@ Not verified yet:
 
 | Item | Risk | How to confirm |
 |---|---|---|
-| Simulator runtime libraries in the image (`libwebkit2gtk-4.0-37` etc. on Ubuntu 22.04) | Unit tests cannot start the simulator. | The "Unit tests" step passes only because it finds no tests ("No (:test) functions found - unit tests skipped"), so the simulator has never started in CI. Run `docker run --rm -it <image> xvfb-run -a connectiq` locally, then the first PR with `(:test)` functions (roadmap 1.3). |
 | "Publish Release" (`publish-release.yml`) | The approval gate on the `release` environment and the package checks have never run. | The first real release. |
 | That `CIQ_DEVELOPER_KEY` is the same key as the store app | The store rejects an update signed with another key. | The first upload to the Connect IQ store. |

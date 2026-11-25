@@ -20,8 +20,8 @@ LABEL org.opencontainers.image.source="https://github.com/mvaneijken/Garmin-Deta
       nl.vaneijken.ciq.sdk-version="${SDK_VERSION}"
 
 # Simulator runtime libraries and Xvfb for headless unit tests.
-# NOTE: the exact library set the SDK 9.x Linux simulator needs is not verified yet; adjust after
-# the first local test run (see docs/CI-CD.md).
+# Verified: the SDK 9.3.0 simulator starts under xvfb-run with this library set and runs the unit tests
+# (see docs/CI-CD.md).
 RUN apt-get update \
  && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
       ca-certificates curl unzip xvfb xauth \
