@@ -15,10 +15,25 @@ class Layout {
   var startPosX = 0;
   var justification = Gfx.TEXT_JUSTIFY_CENTER | Gfx.TEXT_JUSTIFY_VCENTER;
 
+  // The result stays valid until the size, the obscurity or the settings change (the view calls
+  // invalidate() for those) or the value text changes length.
+  hidden var valid = false;
+  hidden var textLength = -1;
+
   function initialize() {}
+
+  function invalidate() {
+    valid = false;
+  }
+
+  function isValid(valueTextLength) {
+    return valid && valueTextLength == textLength;
+  }
 
   // obscurity: DataField.getObscurityFlags(). valueText: the string drawn in the value font.
   function update(dc, obscurity, settings, valueText) {
+    valid = true;
+    textLength = valueText.length();
     var width = dc.getWidth();
     var height = dc.getHeight();
     var hideLabel = settings.hideLabel;
