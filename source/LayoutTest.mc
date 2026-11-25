@@ -7,6 +7,8 @@ using Toybox.Test;
 class FakeDc {
   hidden var screenWidth;
   hidden var screenHeight;
+  // How often Layout measured text: the cost the cache is there to avoid.
+  var measureCalls = 0;
 
   function initialize(width, height) {
     screenWidth = width;
@@ -22,8 +24,49 @@ class FakeDc {
   }
 
   function getTextWidthInPixels(text, font) {
+    measureCalls += 1;
     return text.length() * (font + 1) * 2;
   }
+}
+
+// The view calls update() only when isValid() says the cached result is out of date.
+(:test)
+function testLayoutCacheValidity(logger) {
+  var layout = new Layout();
+  var settings = new Settings();
+  var dc = new FakeDc(200, 100);
+  Test.assertMessage(!layout.isValid(5), "nothing is cached before the first update");
+  layout.update(dc, 7, settings, "1.500");
+  Test.assertMessage(layout.isValid(5), "valid for the same text length");
+  Test.assertMessage(!layout.isValid(6), "a longer text needs a new font");
+  Test.assertMessage(!layout.isValid(4), "a shorter text needs a new font");
+  layout.invalidate();
+  Test.assertMessage(!layout.isValid(5), "invalid after a size, obscurity or settings change");
+  layout.update(dc, 7, settings, "1.500");
+  Test.assertMessage(layout.isValid(5), "valid again after the update");
+  return true;
+}
+
+// A view that checks isValid() first measures text once per change, not once per second.
+(:test)
+function testLayoutCacheAvoidsMeasuring(logger) {
+  var layout = new Layout();
+  var settings = new Settings();
+  var dc = new FakeDc(200, 100);
+  var text = "1.500";
+  for (var second = 0; second < 10; second += 1) {
+    if (!layout.isValid(text.length())) {
+      layout.update(dc, 7, settings, text);
+    }
+  }
+  var callsForTenUpdates = dc.measureCalls;
+  Test.assertMessage(callsForTenUpdates > 0, "the first update measures");
+  layout.update(dc, 7, settings, text);
+  Test.assertMessage(
+    dc.measureCalls == 2 * callsForTenUpdates,
+    "ten updates cost the same as one"
+  );
+  return true;
 }
 
 (:test)
