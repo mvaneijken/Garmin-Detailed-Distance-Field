@@ -104,6 +104,7 @@ The GUI peak can also be read from the console: a scratch copy of the code print
 | Before Phase 1 (`139ec52`) | 9.95 KB | 8.87 KB | 2.5 ms |
 | PR 1 | 10.39 KB | 8.98 KB | 0.8 ms |
 | PR 2 | 10.94 KB | 9.42 KB | under 1 ms (timer resolution 1 ms) |
+| PR 3 (fixes: truncation, mile, reset, settings guards, size correction) | 11.34 KB | 9.77 KB | not measured again (the fixes do not touch the update path) |
 
 What this shows:
 
@@ -115,6 +116,6 @@ What this shows:
 
 ## Using the baseline
 
-- A Phase 1 or later change may not raise the T0 (fenix3) peak above the recorded value (9.8 KB). Other tiers may grow when the feature needs it, as long as the peak stays below the memory limit with room to spare.
+- Gate for T0 (decision of the project owner, 2026-11-25, after the Phase 1 cache cost about 0.5 KB for an update that takes a third of the time): the memory in use on fenix3 in a release build (`-r`), read with the scripted measurement above, stays below 10 KB (16 KB limit). The original rule, no growth above the 9.8 KB GUI peak of the debug build, was given up for the Phase 1 refactor. A later change needs a reason for every 0.1 KB it adds on T0. Other tiers may grow when the feature needs it, as long as the peak stays below the memory limit with room to spare.
 - Re-measure after every SDK update, because the compiler version changes code size.
 - Compare optimization levels (`-O 2z`) in Phase 1.5 against this table.
