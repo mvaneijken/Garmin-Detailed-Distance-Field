@@ -109,6 +109,12 @@ class XTDetailedDistanceDataFieldView extends Ui.DataField {
     buildLastLapText();
   }
 
+  // The timer was reset (activity saved or discarded): forget the laps of the previous activity.
+  function onTimerReset() {
+    lap.reset();
+    buildLastLapText();
+  }
+
   hidden function buildLastLapText() {
     lastLapText =
       lastLapLabelText +
