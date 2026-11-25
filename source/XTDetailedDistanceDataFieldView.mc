@@ -58,7 +58,8 @@ class XTDetailedDistanceDataFieldView extends Ui.DataField {
     // The device unit can change while the field runs and no event reports it.
     refreshUnit();
     // The time of the current lap changes every second; the other contents only at a lap boundary.
-    if (settings.secondLine == 3) {
+    // A hidden line is not built: enabling it in the settings rebuilds the text.
+    if (settings.showLastLap && settings.secondLine == 3) {
       buildSecondLineText();
     }
     var lapDistanceString = Format.distanceString(
