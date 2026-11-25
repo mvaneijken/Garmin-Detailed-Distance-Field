@@ -90,9 +90,28 @@ Peak memory in the simulator, measured by the project owner the same way as the 
 | Step | fenix3 (T0) peak | Against baseline (9.8 KB) | Notes |
 |---|---:|---:|---|
 | Baseline (2.3.5 plus the getProperty fix) | 9.8 KB | | |
-| Phase 1 PR 1 (split into Settings, Format, LapTracker, Layout) | 10.3 KB | +0.5 KB | The release `.prg` is 384 bytes smaller, so the growth is at run time: three more objects and classes, and the extra call depth. Layout cache and the label strings loaded once (1.2) and the compiler options (1.5) come next. If the peak is still above 9.8 KB after 1.5, fold `Layout` back into the view. |
+| Phase 1 PR 1 (split into Settings, Format, LapTracker, Layout) | 10.3 KB | +0.5 KB | The growth is at run time (the `.prg` file is smaller): more classes and objects. |
+| Phase 1 PR 2 (layout cache, labels loaded once) | 11.0 KB | +1.2 KB | Measured with a build that prints `Lap Distance build: phase1-layout-cache` at start. |
 
 The fenix3 four-field screenshot of that run shows the same overlapping digits as the fr965 (roadmap 7.2): the simulator draws over the previous frame because `onUpdate` never clears the screen. It is not caused by Phase 1.
+
+### Scripted measurement (no simulator GUI)
+
+The GUI peak can also be read from the console: a scratch copy of the code prints `System.getSystemStats().usedMemory` at the start of every `compute`, and `monkeydo` shows it. It is the memory in use between two updates (code plus objects, not the transient peak inside `onUpdate`), which is why it is a little below the GUI peak. The numbers follow the GUI numbers closely, so it is a usable proxy for comparing variants without a person at the simulator. fenix3, fresh simulator per run, no activity running, `compute` and `onUpdate` once per second:
+
+| Build | Used, debug build (no `-r`) | Used, release build (`-r`) | `onUpdate` per call (release, simulator time) |
+|---|---:|---:|---:|
+| Before Phase 1 (`139ec52`) | 9.95 KB | 8.87 KB | 2.5 ms |
+| PR 1 | 10.39 KB | 8.98 KB | 0.8 ms |
+| PR 2 | 10.94 KB | 9.42 KB | under 1 ms (timer resolution 1 ms) |
+
+What this shows:
+
+- The release build the store ships uses about 1 KB less than the debug build the baseline was taken from. Compare like with like.
+- The split into four classes costs about 0.1 KB (release); the cache work of PR 2 about 0.45 KB, spread over many small pieces (the cached label strings 0.09 KB, the cached "LL" text 0.04 KB, the build log function 0.02 KB, the layout cache check 0.03 KB; the rest is function and variable overhead).
+- `-O 1` costs 0.1 KB more than `-O 2`; `-O 2z` gives the same result as `-O 2` for this code. A release build already uses `-O 2`.
+- `onUpdate` takes about a third of the time after PR 1 and less than 1 ms after PR 2, against 2.5 ms before (timed with `System.getTimer`, which has a resolution of 1 ms).
+- The simulator profiler listed the old function names (`getShowLastLapProp`, `getTextJustificationLValue`) for the PR 2 build although the console showed the PR 2 build was running, so do not use profiler row names from the simulator to tell which build ran.
 
 ## Using the baseline
 
