@@ -38,4 +38,53 @@ module Format {
     }
     return (scaled / scale).toString() + "." + fraction;
   }
+
+  // The value of the second line for the content chosen in the settings (settings.secondLine).
+  function secondLineValue(lap, unitMeters, settings) {
+    var content = settings.secondLine;
+    if (content == 1) {
+      return durationString(lap.previousLapTime);
+    } else if (content == 2) {
+      return paceString(lap.previousLap, lap.previousLapTime, unitMeters);
+    } else if (content == 3) {
+      return durationString(lap.currentLapTime);
+    } else if (content == 4) {
+      return lap.lapNumber.toString();
+    }
+    return distanceString(lap.previousLap, unitMeters, settings);
+  }
+
+  // milliseconds as m:ss, or h:mm:ss from one hour. Whole seconds, cut like the distance: a lap of
+  // 59.9 s shows 0:59.
+  function durationString(milliseconds) {
+    var seconds = 0;
+    if (milliseconds > 0) {
+      seconds = (milliseconds / 1000).toNumber();
+    }
+    return clockString(seconds);
+  }
+
+  // Seconds per kilometer or mile as m:ss, rounded to a second like the pace of the watch itself.
+  // "--:--" while there is no distance or no time, and for a pace slower than 99:59.
+  function paceString(meters, milliseconds, unitMeters) {
+    if (meters <= 0 || milliseconds <= 0) {
+      return "--:--";
+    }
+    var seconds = (milliseconds / 1000.0) * unitMeters / meters;
+    if (seconds >= 5999.5) {
+      return "--:--";
+    }
+    return clockString((seconds + 0.5).toNumber());
+  }
+
+  function clockString(totalSeconds) {
+    var hours = totalSeconds / 3600;
+    var minutes = (totalSeconds % 3600) / 60;
+    var seconds = totalSeconds % 60;
+    var text = minutes.toString() + ":";
+    if (hours > 0) {
+      text = hours.toString() + ":" + (minutes < 10 ? "0" : "") + text;
+    }
+    return text + (seconds < 10 ? "0" : "") + seconds.toString();
+  }
 }

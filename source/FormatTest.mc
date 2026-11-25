@@ -110,3 +110,57 @@ function testFormatKeepsLeadingZerosOfTheFraction(logger) {
   Test.assertEqualMessage(Format.distanceString(1009.0, 1000, settings), "1.00", "two digits, 1009 m");
   return true;
 }
+
+// Roadmap 2.3: lap times and pace for the second line.
+(:test)
+function testFormatDuration(logger) {
+  Test.assertEqualMessage(Format.durationString(0), "0:00", "zero");
+  Test.assertEqualMessage(Format.durationString(999), "0:00", "under a second is cut, not rounded");
+  Test.assertEqualMessage(Format.durationString(1000), "0:01", "one second");
+  Test.assertEqualMessage(Format.durationString(59999), "0:59", "59.999 s");
+  Test.assertEqualMessage(Format.durationString(60000), "1:00", "one minute");
+  Test.assertEqualMessage(Format.durationString(3599999), "59:59", "just under an hour");
+  Test.assertEqualMessage(Format.durationString(3600000), "1:00:00", "one hour");
+  Test.assertEqualMessage(Format.durationString(3661000), "1:01:01", "1:01:01");
+  Test.assertEqualMessage(Format.durationString(-5), "0:00", "negative");
+  return true;
+}
+
+(:test)
+function testFormatPace(logger) {
+  var mile = Format.MILE_METERS;
+  Test.assertEqualMessage(Format.paceString(1000.0, 300000, 1000), "5:00", "5:00 per km");
+  Test.assertEqualMessage(Format.paceString(800.0, 240000, 1000), "5:00", "800 m in 4:00");
+  Test.assertEqualMessage(Format.paceString(mile, 480000, mile), "8:00", "8:00 per mile");
+  Test.assertEqualMessage(Format.paceString(1000.0, 299600, 1000), "5:00", "the pace is rounded to a second");
+  Test.assertEqualMessage(Format.paceString(1000.0, 299400, 1000), "4:59", "299.4 s");
+  Test.assertEqualMessage(Format.paceString(0.0, 60000, 1000), "--:--", "no distance");
+  Test.assertEqualMessage(Format.paceString(1000.0, 0, 1000), "--:--", "no time");
+  Test.assertEqualMessage(Format.paceString(1.0, 60000, 1000), "--:--", "slower than 99:59 per km");
+  return true;
+}
+
+// The value of the second line follows the setting: 0 distance, 1 time, 2 pace of the previous lap,
+// 3 time of the current lap, 4 number of the current lap.
+(:test)
+function testFormatSecondLineValue(logger) {
+  var settings = new Settings();
+  settings.zeroToOneDigits = 3;
+  var lap = new LapTracker();
+  lap.onDistance(500.0);
+  lap.onTimer(150000);
+  lap.onLap();
+  lap.onDistance(600.0);
+  lap.onTimer(180000);
+  settings.secondLine = 0;
+  Test.assertEqualMessage(Format.secondLineValue(lap, 1000, settings), "0.500", "previous lap distance");
+  settings.secondLine = 1;
+  Test.assertEqualMessage(Format.secondLineValue(lap, 1000, settings), "2:30", "previous lap time");
+  settings.secondLine = 2;
+  Test.assertEqualMessage(Format.secondLineValue(lap, 1000, settings), "5:00", "previous lap pace");
+  settings.secondLine = 3;
+  Test.assertEqualMessage(Format.secondLineValue(lap, 1000, settings), "0:30", "current lap time");
+  settings.secondLine = 4;
+  Test.assertEqualMessage(Format.secondLineValue(lap, 1000, settings), "2", "current lap number");
+  return true;
+}

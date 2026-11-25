@@ -3,6 +3,16 @@
 		title="@Strings.showLastLap_prop">
 		<settingConfig type="boolean" />
 	</setting>
+	<setting propertyKey="@Properties.secondline"
+		title="@Strings.secondline">
+		<settingConfig type="list">
+			<listEntry value="0">@Strings.secondline0</listEntry>
+			<listEntry value="1">@Strings.secondline1</listEntry>
+			<listEntry value="2">@Strings.secondline2</listEntry>
+			<listEntry value="3">@Strings.secondline3</listEntry>
+			<listEntry value="4">@Strings.secondline4</listEntry>
+		</settingConfig>
+	</setting>
 	<setting propertyKey="@Properties.hideLabel"
 		title="@Strings.hideLabel">
 		<settingConfig type="boolean" />

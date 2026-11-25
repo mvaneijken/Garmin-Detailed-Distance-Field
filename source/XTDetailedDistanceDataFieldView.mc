@@ -7,11 +7,13 @@ class XTDetailedDistanceDataFieldView extends Ui.DataField {
   hidden var lap;
   hidden var layout;
   hidden var unitMeters = 1000;
-  // The label texts are loaded once; loading a resource allocates a new string every time.
+  // The label texts are loaded once; loading a resource allocates a new string every time. The
+  // second line has one label, the one of the content chosen in the settings.
   hidden var labelText;
-  hidden var lastLapLabelText;
-  // "LL 1.234": rebuilt only when the previous lap, the unit or the settings change.
-  hidden var lastLapText;
+  hidden var secondLineLabel;
+  // "LL 1.234": rebuilt only when the lap, the unit or the settings change, and every update while
+  // it shows the time of the current lap.
+  hidden var secondLineText;
 
   function initialize() {
     DataField.initialize();
@@ -21,16 +23,17 @@ class XTDetailedDistanceDataFieldView extends Ui.DataField {
     lap = new LapTracker();
     layout = new Layout();
     labelText = Ui.loadResource(Rez.Strings.label);
-    lastLapLabelText = Ui.loadResource(Rez.Strings.lastlaplabel);
+    loadSecondLineLabel();
     refreshUnit();
-    buildLastLapText();
+    buildSecondLineText();
   }
 
   // Called by the app when the user changes a setting.
   function onSettingsChanged() {
     settings.load();
     layout.invalidate();
-    buildLastLapText();
+    loadSecondLineLabel();
+    buildSecondLineText();
   }
 
   // Called when the size or the obscurity of the draw context changes.
@@ -44,6 +47,9 @@ class XTDetailedDistanceDataFieldView extends Ui.DataField {
     if (info has :elapsedDistance) {
       lap.onDistance(info.elapsedDistance);
     }
+    if (info has :timerTime) {
+      lap.onTimer(info.timerTime);
+    }
   }
 
   // Display the value you computed here. This will be called
@@ -51,6 +57,10 @@ class XTDetailedDistanceDataFieldView extends Ui.DataField {
   function onUpdate(dc) {
     // The device unit can change while the field runs and no event reports it.
     refreshUnit();
+    // The time of the current lap changes every second; the other contents only at a lap boundary.
+    if (settings.secondLine == 3) {
+      buildSecondLineText();
+    }
     var lapDistanceString = Format.distanceString(
       lap.currentLap,
       unitMeters,
@@ -93,7 +103,7 @@ class XTDetailedDistanceDataFieldView extends Ui.DataField {
         layout.startPosX,
         layout.lastValuePosY,
         layout.lastValueFont,
-        lastLapText,
+        secondLineText,
         layout.justification
       );
     }
@@ -101,32 +111,45 @@ class XTDetailedDistanceDataFieldView extends Ui.DataField {
 
   function onTimerLap() {
     lap.onLap();
-    buildLastLapText();
+    buildSecondLineText();
   }
 
   function onWorkoutStepComplete() {
     lap.onLap();
-    buildLastLapText();
+    buildSecondLineText();
   }
 
   // The timer was reset (activity saved or discarded): forget the laps of the previous activity.
   function onTimerReset() {
     lap.reset();
-    buildLastLapText();
+    buildSecondLineText();
   }
 
-  hidden function buildLastLapText() {
-    lastLapText =
-      lastLapLabelText +
-      " " +
-      Format.distanceString(lap.previousLap, unitMeters, settings);
+  hidden function buildSecondLineText() {
+    secondLineText =
+      secondLineLabel + " " + Format.secondLineValue(lap, unitMeters, settings);
+  }
+
+  // Only the label of the chosen content is kept in memory.
+  hidden function loadSecondLineLabel() {
+    var label = Rez.Strings.lastlaplabel;
+    if (settings.secondLine == 1) {
+      label = Rez.Strings.lastlaptimelabel;
+    } else if (settings.secondLine == 2) {
+      label = Rez.Strings.lastlappacelabel;
+    } else if (settings.secondLine == 3) {
+      label = Rez.Strings.laptimelabel;
+    } else if (settings.secondLine == 4) {
+      label = Rez.Strings.lapnumberlabel;
+    }
+    secondLineLabel = Ui.loadResource(label);
   }
 
   // Which build runs: printed once at start in builds without -r, so a measurement can be tied to
   // the .prg it came from. Release builds (-r) get the empty twin. Change the text per step.
   (:debug)
   hidden function logBuild() {
-    Sys.println("Lap Distance build: phase1-layout-cache");
+    Sys.println("Lap Distance build: phase2-second-line");
   }
 
   (:release)
@@ -140,7 +163,7 @@ class XTDetailedDistanceDataFieldView extends Ui.DataField {
     }
     if (meters != unitMeters) {
       unitMeters = meters;
-      buildLastLapText();
+      buildSecondLineText();
     }
   }
 }
