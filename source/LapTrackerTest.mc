@@ -89,6 +89,66 @@ function testResetClearsTheLaps(logger) {
   return true;
 }
 
+// Roadmap 2.3: the lap keeps its time and its number next to its distance.
+(:test)
+function testLapTimeAndNumber(logger) {
+  var lap = new LapTracker();
+  Test.assertEqualMessage(lap.lapNumber, 1, "the first lap is lap 1");
+  lap.onDistance(300.0);
+  lap.onTimer(90000);
+  Test.assertEqual(lap.currentLapTime, 90000);
+  lap.onLap();
+  Test.assertEqualMessage(lap.previousLapTime, 90000, "the previous lap took 90 s");
+  Test.assertEqualMessage(lap.lapNumber, 2, "the next lap is lap 2");
+  lap.onTimer(95000);
+  Test.assertEqualMessage(lap.currentLapTime, 5000, "the current lap time restarts at the boundary");
+  lap.onLap();
+  Test.assertEqual(lap.previousLapTime, 5000);
+  Test.assertEqual(lap.lapNumber, 3);
+  return true;
+}
+
+// The timer is paused between laps: the lap time follows the timer, not the clock.
+(:test)
+function testLapTimeFollowsTheTimer(logger) {
+  var lap = new LapTracker();
+  lap.onTimer(60000);
+  lap.onLap();
+  lap.onTimer(60000);
+  Test.assertEqual(lap.currentLapTime, 0);
+  lap.onTimer(61000);
+  Test.assertEqual(lap.currentLapTime, 1000);
+  return true;
+}
+
+// S7: a new activity starts at lap 1 with no lap time.
+(:test)
+function testResetClearsTheLapTimeAndNumber(logger) {
+  var lap = new LapTracker();
+  lap.onTimer(60000);
+  lap.onLap();
+  lap.onTimer(80000);
+  lap.reset();
+  Test.assertEqual(lap.lapNumber, 1);
+  Test.assertEqual(lap.previousLapTime, 0);
+  Test.assertEqual(lap.currentLapTime, 0);
+  lap.onTimer(0);
+  lap.onTimer(15000);
+  Test.assertEqualMessage(lap.currentLapTime, 15000, "counts from its own start, not from 60 s");
+  return true;
+}
+
+(:test)
+function testNoTimerTime(logger) {
+  var lap = new LapTracker();
+  lap.onTimer(30000);
+  lap.onTimer(null);
+  Test.assertEqual(lap.currentLapTime, 0);
+  lap.onTimer(31000);
+  Test.assertEqual(lap.currentLapTime, 31000);
+  return true;
+}
+
 // The device has no distance yet (indoor, no GPS): the lap shows 0 and keeps the last known distance.
 (:test)
 function testNoDistance(logger) {

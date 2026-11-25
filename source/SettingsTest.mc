@@ -15,6 +15,7 @@ function testSettingsLoadDefaults(logger) {
   Test.assertEqual(settings.overrideSizing, false);
   Test.assertEqual(settings.heightOversize, 100);
   Test.assertEqual(settings.widthOversize, 100);
+  Test.assertEqualMessage(settings.secondLine, 0, "the second line shows the previous lap distance");
   return true;
 }
 

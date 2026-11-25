@@ -6,8 +6,26 @@ class LapTracker {
   var lapStart = 0;
   var currentLap = 0;
   var previousLap = 0;
+  // The timer time (milliseconds, Activity.Info.timerTime) works like the distance: the last value
+  // seen, the value at the start of the lap, and the times of the current and the previous lap.
+  var timer = 0;
+  var lapTimeStart = 0;
+  var currentLapTime = 0;
+  var previousLapTime = 0;
+  // The lap in progress: 1 for the first lap, one more at every lap event.
+  var lapNumber = 1;
 
   function initialize() {}
+
+  // elapsed is Activity.Info.timerTime in milliseconds: null while the device has no timer value.
+  function onTimer(elapsed) {
+    if (elapsed != null) {
+      timer = elapsed;
+      currentLapTime = timer - lapTimeStart;
+    } else {
+      currentLapTime = 0;
+    }
+  }
 
   // elapsed is Activity.Info.elapsedDistance: null while the device has no distance yet.
   function onDistance(elapsed) {
@@ -25,6 +43,11 @@ class LapTracker {
     lapStart = 0;
     currentLap = 0;
     previousLap = 0;
+    timer = 0;
+    lapTimeStart = 0;
+    currentLapTime = 0;
+    previousLapTime = 0;
+    lapNumber = 1;
   }
 
   // A lap boundary: manual lap, auto lap or the end of a workout step. The two events run the
@@ -32,5 +55,8 @@ class LapTracker {
   function onLap() {
     previousLap = distance - lapStart;
     lapStart = distance;
+    previousLapTime = timer - lapTimeStart;
+    lapTimeStart = timer;
+    lapNumber += 1;
   }
 }

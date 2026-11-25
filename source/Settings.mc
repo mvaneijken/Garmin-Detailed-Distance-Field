@@ -5,6 +5,9 @@ using Toybox.Application as App;
 // default of resources/properties/properties.xml (finding C6: "%.nullf" is not a format).
 class Settings {
   var showLastLap = false;
+  // What the second line shows: 0 previous lap distance, 1 previous lap time, 2 previous lap pace,
+  // 3 current lap time, 4 current lap number.
+  var secondLine = 0;
   var zeroToOneDigits = 3;
   var oneToTenDigits = 3;
   var tenToHundredDigits = 3;
@@ -18,6 +21,7 @@ class Settings {
 
   function load() {
     showLastLap = readProperty("showLastLap_prop") == true;
+    secondLine = clamp(readProperty("secondline"), 0, 4, 0);
     zeroToOneDigits = clamp(readProperty("zerotoone"), 0, 3, 3);
     oneToTenDigits = clamp(readProperty("onetoten"), 0, 3, 3);
     tenToHundredDigits = clamp(readProperty("tentohundred"), 0, 3, 3);
