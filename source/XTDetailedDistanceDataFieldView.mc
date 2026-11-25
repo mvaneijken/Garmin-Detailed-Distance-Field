@@ -15,6 +15,7 @@ class XTDetailedDistanceDataFieldView extends Ui.DataField {
 
   function initialize() {
     DataField.initialize();
+    logBuild();
     settings = new Settings();
     settings.load();
     lap = new LapTracker();
@@ -114,6 +115,16 @@ class XTDetailedDistanceDataFieldView extends Ui.DataField {
       " " +
       Format.distanceString(lap.previousLap, unitMeters, settings);
   }
+
+  // Which build runs: printed once at start in builds without -r, so a measurement can be tied to
+  // the .prg it came from. Release builds (-r) get the empty twin. Change the text per step.
+  (:debug)
+  hidden function logBuild() {
+    Sys.println("Lap Distance build: phase1-layout-cache");
+  }
+
+  (:release)
+  hidden function logBuild() {}
 
   // Reads the device unit; the "LL" text is rebuilt only when the unit changed.
   hidden function refreshUnit() {
