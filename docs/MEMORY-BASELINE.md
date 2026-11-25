@@ -106,6 +106,15 @@ The GUI peak can also be read from the console: a scratch copy of the code print
 | PR 2 | 10.94 KB | 9.42 KB | under 1 ms (timer resolution 1 ms) |
 | PR 3 (fixes: truncation, mile, reset, settings guards, size correction) | 11.34 KB | 9.77 KB | not measured again (the fixes do not touch the update path) |
 
+Phase 2 (roadmap 2.3, second line with five contents), measured in bytes in one session with the same probe line for both builds (the probe line differs a little from the one above, so compare the two rows with each other, not with the table):
+
+| Build (fenix3, release `-r`) | Used (bytes) | Growth |
+|---|---:|---:|
+| `master` after PR 3 (control) | 9712 | |
+| 2.3: lap time, lap pace, current lap time, lap number | 11192 | +1480 |
+
+The debug build uses 12888 bytes. The setting does not change the number: the default (previous lap distance) and "current lap time" give the same value, because the code is the same and only the label differs. The growth is code, not data: two time formatters, the five-way content choice, the lap timer fields and the label loading. It is the largest step since the baseline and it takes the T0 release usage to 10.9 KB (1024-byte KB) of the 12 KB gate below.
+
 What this shows:
 
 - The release build the store ships uses about 1 KB less than the debug build the baseline was taken from. Compare like with like.
@@ -116,6 +125,6 @@ What this shows:
 
 ## Using the baseline
 
-- Gate for T0 (decision of the project owner, 2026-11-25, after the Phase 1 cache cost about 0.5 KB for an update that takes a third of the time): the memory in use on fenix3 in a release build (`-r`), read with the scripted measurement above, stays below 10 KB (16 KB limit). The original rule, no growth above the 9.8 KB GUI peak of the debug build, was given up for the Phase 1 refactor. A later change needs a reason for every 0.1 KB it adds on T0. Other tiers may grow when the feature needs it, as long as the peak stays below the memory limit with room to spare.
+- Gate for T0 (decision of the project owner, 2026-11-25, set at 12 KB when Phase 2 started): the memory in use on fenix3 in a release build (`-r`), read with the scripted measurement above, stays at or below 12 KB (12288 bytes, 75 % of the 16 KB limit). There is no official Garmin margin; 25 % free covers what the simulator does not show (firmware, longer translated strings, SDK updates, which move the numbers by some hundreds of bytes). Each data field app has its own heap, so other fields on the screen do not count. Features that do not fit are excluded from T0 by annotation. The earlier gates were the 9.8 KB GUI peak of the debug build (given up for the Phase 1 refactor) and 10 KB in a release build (replaced by this one). A later change needs a reason for every 0.1 KB it adds on T0. Other tiers may grow when the feature needs it, as long as the peak stays below the memory limit with room to spare.
 - Re-measure after every SDK update, because the compiler version changes code size.
 - Compare optimization levels (`-O 2z`) in Phase 1.5 against this table.
