@@ -1,13 +1,14 @@
 using Toybox.Application as App;
 
-// The user settings, read once and cached. The view reloads them in onSettingsChanged() and when the
-// layout changes, instead of reading the property store six times per second.
+// The user settings, read once and cached. The view reloads them in onSettingsChanged() instead of
+// reading the property store six times per second. A missing or invalid value falls back to the
+// default of resources/properties/properties.xml (finding C6: "%.nullf" is not a format).
 class Settings {
   var showLastLap = false;
   var zeroToOneDigits = 3;
-  var oneToTenDigits = 2;
-  var tenToHundredDigits = 2;
-  var hundredOnwardsDigits = 1;
+  var oneToTenDigits = 3;
+  var tenToHundredDigits = 3;
+  var hundredOnwardsDigits = 2;
   var hideLabel = false;
   var overrideSizing = false;
   var heightOversize = 100;
@@ -16,20 +17,33 @@ class Settings {
   function initialize() {}
 
   function load() {
-    var showLastLapValue = readProperty("showLastLap_prop");
-    if (null == showLastLapValue) {
-      showLastLap = false;
-    } else {
-      showLastLap = showLastLapValue;
+    showLastLap = readProperty("showLastLap_prop") == true;
+    zeroToOneDigits = clamp(readProperty("zerotoone"), 0, 3, 3);
+    oneToTenDigits = clamp(readProperty("onetoten"), 0, 3, 3);
+    tenToHundredDigits = clamp(readProperty("tentohundred"), 0, 3, 3);
+    hundredOnwardsDigits = clamp(readProperty("hundredonwards"), 0, 3, 2);
+    hideLabel = readProperty("hideLabel") == true;
+    overrideSizing = readProperty("overridesizeing") == true;
+    heightOversize = clamp(readProperty("heightoversizeoverride"), 50, 150, 100);
+    widthOversize = clamp(readProperty("widthoversizeoverride"), 50, 150, 100);
+  }
+
+  // value as a whole number between low and high; the fallback when it is missing or not a number.
+  function clamp(value, low, high, fallback) {
+    if (value == null || !(value has :toNumber)) {
+      return fallback;
     }
-    zeroToOneDigits = readProperty("zerotoone");
-    oneToTenDigits = readProperty("onetoten");
-    tenToHundredDigits = readProperty("tentohundred");
-    hundredOnwardsDigits = readProperty("hundredonwards");
-    hideLabel = readProperty("hideLabel");
-    overrideSizing = readProperty("overridesizeing");
-    heightOversize = readProperty("heightoversizeoverride");
-    widthOversize = readProperty("widthoversizeoverride");
+    var number = value.toNumber();
+    if (number == null) {
+      return fallback;
+    }
+    if (number < low) {
+      return low;
+    }
+    if (number > high) {
+      return high;
+    }
+    return number;
   }
 
   // Application.Properties exists from Connect IQ 2.4.0; older devices use the AppBase method.
