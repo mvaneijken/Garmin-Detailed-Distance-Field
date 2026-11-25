@@ -133,8 +133,7 @@ class Layout {
   }
 
   // Steps down from the largest number font until the text fits the height, then the width.
-  // The correction factors use integer division (a Number divided by 100), as the field always did:
-  // 100 to 199 act as 100 %, below 100 as 0 %. Keep it that way until a decision on the fix.
+  // The size correction (50 to 150 %) lets the text use that part of the height and of the width.
   function getValueFont(dc, settings, valueText, labelFontHeight) {
     var height = dc.getHeight();
     var width = dc.getWidth();
@@ -144,17 +143,16 @@ class Layout {
     if (settings.showLastLap != true) {
       lastValueFontHeight = 0;
     }
-    var heightOversizeValue = 100;
-    var widthOversizeValue = 100;
+    var maxHeight = height;
+    var maxWidth = width;
 
     if (settings.overrideSizing == true) {
-      heightOversizeValue = settings.heightOversize;
-      widthOversizeValue = settings.widthOversize;
+      maxHeight = height * settings.heightOversize / 100.0;
+      maxWidth = width * settings.widthOversize / 100.0;
     }
 
     while (
-      fontHeight + labelFontHeight + lastValueFontHeight >
-        height * (heightOversizeValue / 100) &&
+      fontHeight + labelFontHeight + lastValueFontHeight > maxHeight &&
       font >= 1
     ) {
       font = font - 1;
@@ -162,11 +160,9 @@ class Layout {
     }
 
     var valueFontWidth = dc.getTextWidthInPixels(valueText, font);
-    valueFontWidth = valueFontWidth * (widthOversizeValue / 100);
-    while (valueFontWidth > width * (widthOversizeValue / 100) && font >= 1) {
+    while (valueFontWidth > maxWidth && font >= 1) {
       font = font - 1;
       valueFontWidth = dc.getTextWidthInPixels(valueText, font);
-      valueFontWidth = valueFontWidth * (widthOversizeValue / 100);
     }
     return font;
   }

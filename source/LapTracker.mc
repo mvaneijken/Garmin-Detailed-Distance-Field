@@ -19,6 +19,14 @@ class LapTracker {
     }
   }
 
+  // The activity was saved or discarded: start from scratch (finding C2).
+  function reset() {
+    distance = 0;
+    lapStart = 0;
+    currentLap = 0;
+    previousLap = 0;
+  }
+
   // A lap boundary: manual lap, auto lap or the end of a workout step. The two events run the
   // same code; whether both can fire for one boundary is roadmap item 0.5 (finding C3).
   function onLap() {

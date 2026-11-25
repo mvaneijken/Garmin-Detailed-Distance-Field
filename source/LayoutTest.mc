@@ -126,6 +126,60 @@ function testFontShrinksForLongText(logger) {
   return true;
 }
 
+// The size correction lets the text use more or less of the width: 150 % allows a larger font than
+// 100 %, 50 % a smaller one. (Before, the factors were divided as whole numbers and did nothing
+// for the width, and made the font the smallest one for the height below 100 %.)
+(:test)
+function testSizeCorrectionChangesTheFont(logger) {
+  var layout = new Layout();
+  var settings = new Settings();
+  settings.hideLabel = true;
+  settings.showLastLap = false;
+  var dc = new FakeDc(200, 400);
+  var text = "123456789.12";
+
+  settings.overrideSizing = false;
+  layout.update(dc, 7, settings, text);
+  var normalFont = layout.valueFont;
+
+  settings.overrideSizing = true;
+  settings.heightOversize = 100;
+  settings.widthOversize = 100;
+  layout.update(dc, 7, settings, text);
+  Test.assertEqualMessage(layout.valueFont, normalFont, "100 % is the same as no correction");
+
+  settings.widthOversize = 150;
+  layout.update(dc, 7, settings, text);
+  Test.assertMessage(layout.valueFont > normalFont, "150 % of the width allows a larger font");
+
+  settings.widthOversize = 50;
+  layout.update(dc, 7, settings, text);
+  Test.assertMessage(layout.valueFont < normalFont, "50 % of the width needs a smaller font");
+  Test.assertMessage(layout.valueFont >= 1, "but never below the smallest font");
+  return true;
+}
+
+(:test)
+function testSizeCorrectionOfTheHeight(logger) {
+  var layout = new Layout();
+  var settings = new Settings();
+  settings.hideLabel = true;
+  settings.showLastLap = true;
+  settings.overrideSizing = true;
+  var dc = new FakeDc(400, 60);
+  settings.heightOversize = 100;
+  layout.update(dc, 7, settings, "1");
+  var normalFont = layout.valueFont;
+  settings.heightOversize = 150;
+  layout.update(dc, 7, settings, "1");
+  Test.assertMessage(layout.valueFont >= normalFont, "more height never gives a smaller font");
+  settings.heightOversize = 50;
+  layout.update(dc, 7, settings, "1");
+  Test.assertMessage(layout.valueFont <= normalFont, "less height never gives a larger font");
+  Test.assertMessage(layout.valueFont >= 0, "and a font is always chosen");
+  return true;
+}
+
 // A hidden label gives the value more room, so the value is placed higher in the field.
 (:test)
 function testHiddenLabelMovesValueUp(logger) {

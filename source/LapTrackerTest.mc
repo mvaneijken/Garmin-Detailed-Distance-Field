@@ -69,6 +69,26 @@ function testTwoEventsAtOneBoundaryZeroThePreviousLap(logger) {
   return true;
 }
 
+// S7 (finding C2): save the activity and start a new one. The laps of the old activity must not
+// show up in the new one.
+(:test)
+function testResetClearsTheLaps(logger) {
+  var lap = new LapTracker();
+  lap.onDistance(500.0);
+  lap.onLap();
+  lap.onDistance(800.0);
+  lap.reset();
+  Test.assertEqual(lap.currentLap, 0);
+  Test.assertEqual(lap.previousLap, 0);
+  lap.onDistance(0.0);
+  Test.assertEqualMessage(lap.currentLap, 0.0, "the new activity starts at 0");
+  lap.onDistance(120.0);
+  Test.assertEqualMessage(lap.currentLap, 120.0, "and counts from its own start, not from 500 m");
+  lap.onLap();
+  Test.assertEqual(lap.previousLap, 120.0);
+  return true;
+}
+
 // The device has no distance yet (indoor, no GPS): the lap shows 0 and keeps the last known distance.
 (:test)
 function testNoDistance(logger) {
