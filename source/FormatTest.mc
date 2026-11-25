@@ -35,8 +35,15 @@ function testFormatStatuteMile(logger) {
   var settings = new Settings();
   settings.zeroToOneDigits = 3;
   settings.oneToTenDigits = 3;
-  Test.assertEqualMessage(Format.distanceString(1610.0, 1610, settings), "1.000", "one mile");
-  Test.assertEqualMessage(Format.distanceString(805.0, 1610, settings), "0.500", "half a mile");
+  settings.tenToHundredDigits = 3;
+  // Finding C1: a mile is 1609.344 m, not 1610 m (0.66 m per mile).
+  var mile = Format.MILE_METERS;
+  Test.assertEqualMessage(Format.distanceString(mile, mile, settings), "1.000", "one mile");
+  Test.assertEqualMessage(Format.distanceString(804.672, mile, settings), "0.500", "half a mile");
+  Test.assertEqualMessage(Format.distanceString(1609.0, mile, settings), "0.999", "1609 m is just short of a mile");
+  Test.assertEqualMessage(Format.distanceString(1610.0, mile, settings), "1.000", "1610 m is past a mile");
+  Test.assertEqualMessage(Format.distanceString(16093.44, mile, settings), "10.000", "ten miles");
+  Test.assertEqualMessage(Format.distanceString(16093.0, mile, settings), "9.999", "just short of ten miles");
   return true;
 }
 

@@ -1,6 +1,8 @@
 // Pure formatting functions: no screen, no settings store, so unit tests can call them directly.
 module Format {
   const POWERS_OF_TEN = [1, 10, 100, 1000];
+  // The international mile: exactly 1609.344 m.
+  const MILE_METERS = 1609.344;
 
   // distance: meters (Float). unitMeters: meters per kilometer or per mile.
   // The digits per band come from the settings (0 to 3 each): 0 to 1, 1 to 10, 10 to 100 and

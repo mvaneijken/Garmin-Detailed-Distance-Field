@@ -128,7 +128,7 @@ class XTDetailedDistanceDataFieldView extends Ui.DataField {
 
   // Reads the device unit; the "LL" text is rebuilt only when the unit changed.
   hidden function refreshUnit() {
-    var meters = 1610;
+    var meters = Format.MILE_METERS;
     if (Sys.getDeviceSettings().distanceUnits == System.UNIT_METRIC) {
       meters = 1000;
     }
