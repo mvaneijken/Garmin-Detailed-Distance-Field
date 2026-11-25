@@ -83,6 +83,20 @@ function testFormatTruncatesTheLastDecimal(logger) {
   return true;
 }
 
+// A distance just below the next step must not be promoted by the float correction.
+(:test)
+function testFormatDoesNotPromoteJustBelowABoundary(logger) {
+  var settings = new Settings();
+  settings.zeroToOneDigits = 3;
+  settings.oneToTenDigits = 3;
+  settings.tenToHundredDigits = 3;
+  Test.assertEqualMessage(Format.distanceString(999.999, 1000, settings), "0.999", "1 mm short of 1 km");
+  // A 32-bit float cannot tell 1 mm from rounding error at 10 km (its resolution there is 1 mm).
+  Test.assertEqualMessage(Format.distanceString(9999.99, 1000, settings), "9.999", "1 cm short of 10 km");
+  Test.assertEqualMessage(Format.distanceString(1999.999, 1000, settings), "1.999", "1 mm short of 2 km");
+  return true;
+}
+
 // The leading zeros of the fraction stay: 1.005 km is 1.005, not 1.5.
 (:test)
 function testFormatKeepsLeadingZerosOfTheFraction(logger) {

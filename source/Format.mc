@@ -9,8 +9,11 @@ module Format {
   // 100+ km or miles.
   //
   // The last digit is truncated, not rounded: the field never shows a distance that has not been
-  // covered (999.6 m shows 0.999, not 1.000). The small correction before the cut absorbs the
-  // error of 32-bit floats, so that exactly 1000 m shows 1.000 and not 0.999.
+  // covered (999.6 m shows 0.999, not 1.000). The correction before the cut (0.00003 %, a few
+  // units in the last place of a 32-bit float) only absorbs the rounding error of the division and
+  // the multiplication, so that exactly 1000 m shows 1.000 and not 0.999. It is 0.3 mm at 1 km and
+  // 3 mm at 10 km, which is about the resolution of the 32-bit distance itself: a distance 1 mm
+  // short of 1 km still shows 0.999.
   function distanceString(distance, unitMeters, settings) {
     var units = 0.0;
     if (distance > 0) {
@@ -25,7 +28,7 @@ module Format {
       digits = settings.tenToHundredDigits;
     }
     var scale = POWERS_OF_TEN[digits];
-    var scaled = (units * scale * 1.000001 + 0.0005).toNumber();
+    var scaled = (units * scale * 1.0000003).toNumber();
     if (digits == 0) {
       return scaled.toString();
     }
