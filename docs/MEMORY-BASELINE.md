@@ -83,6 +83,17 @@ What it shows:
 
 Gaps: the two captures are different layouts and cannot be compared with each other. A fenix3 capture in the 4-field layout (the path with the font-fit loop) was considered and skipped by decision of the project owner; it is not needed to start Phase 1.2. Note the layout with every later capture. The fr965 has no `onUpdate` row in any capture, so use the rows above for it. One capture with laps (capture 3) also lists `Background.initialize` (4 calls) and `Background.draw` (1 call), although nothing creates a `Background`. Checked: captures 2 and 3 ran `tier-fr965.prg`, a scratch build whose `source/` files are identical to `master`, and neither the sources, the resources nor the generated `Rez.mc` instantiate the class. The rows stay unexplained and are low priority, because Phase 1.1 removes the class.
 
+## Phase 1 progress
+
+Peak memory in the simulator, measured by the project owner the same way as the baseline (four fields, simulation running). The exit criterion applies at the end of Phase 1; these rows show the trend.
+
+| Step | fenix3 (T0) peak | Against baseline (9.8 KB) | Notes |
+|---|---:|---:|---|
+| Baseline (2.3.5 plus the getProperty fix) | 9.8 KB | | |
+| Phase 1 PR 1 (split into Settings, Format, LapTracker, Layout) | 10.3 KB | +0.5 KB | The release `.prg` is 384 bytes smaller, so the growth is at run time: three more objects and classes, and the extra call depth. Layout cache and the label strings loaded once (1.2) and the compiler options (1.5) come next. If the peak is still above 9.8 KB after 1.5, fold `Layout` back into the view. |
+
+The fenix3 four-field screenshot of that run shows the same overlapping digits as the fr965 (roadmap 7.2): the simulator draws over the previous frame because `onUpdate` never clears the screen. It is not caused by Phase 1.
+
 ## Using the baseline
 
 - A Phase 1 or later change may not raise the T0 (fenix3) peak above the recorded value (9.8 KB). Other tiers may grow when the feature needs it, as long as the peak stays below the memory limit with room to spare.
