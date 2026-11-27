@@ -73,7 +73,7 @@ Run each scenario as its own activity and keep it short (the log holds about 100
 
 1. Connect the watch by USB (read the log after the activity is stopped and saved: it may be written late). Copy `GARMIN/APPS/LOGS/LAPPROBE.TXT` (and `LAPPROBE.BAK` if it exists) and the newest file of `GARMIN/Activity` (`.fit`). Empty the log file again before the next scenario (delete its content, keep the file).
 2. Run the script: `tools\probe\.venv\Scripts\python tools\probe\compare_lap_probe.py --log LAPPROBE.BAK --log LAPPROBE.TXT --fit <activity>.fit` (leave `--log LAPPROBE.BAK` out when there is no `.BAK`). Keep the `.fit` file private (it holds a GPS track); the log is safe to share.
-3. Paste the table into the Results below, with the verdict line.
+3. Paste the table into the Results below, with the verdict line. A log with more than one activity (S7) is cut after every reset: the script prints one table per activity, pairs the FIT file with the last activity that has laps (`--activity N` picks another one), and ends with a `Reset n: OK` or `OLD VALUES` line, which is the answer for finding C2.
 
 ### What to press, per scenario
 

@@ -142,6 +142,59 @@ class CompareTest(unittest.TestCase):
         self.assertEqual(rows, [])
 
 
+class GroupingAcrossAComputeTest(unittest.TestCase):
+    def test_two_lap_events_one_and_a_half_seconds_apart_are_one_boundary_even_with_a_compute_between(self):
+        events = events_for(
+            line("P", "step", 200000, 190000, "400.0", "400.0", "0", 2),
+            line("C", "after", 200400, 190400, "403.0", "3.0", "400.0", 2),
+            line("P", "lap", 201500, 191500, "405.0", "0.0", "0.0", 3),
+            line("C", "after", 202400, 192400, "408.0", "3.0", "0.0", 3),
+        )
+        rows, _ = probe.compare(events, [lap(1, 400.0), lap(2, 200.0)])
+        self.assertEqual(len(rows), 1)
+        self.assertEqual(rows[0].events, ["step", "lap"])
+        self.assertIn("DOUBLE EVENT", rows[0].flags)
+        self.assertEqual(rows[0].shown_previous, 0.0)
+
+
+class ActivitiesTest(unittest.TestCase):
+    def two_activities(self):
+        return events_for(
+            line("P", "start", 1000, 0, "0.0", "0.0", "0", 1),
+            line("P", "lap", 100000, 95000, "500.0", "500.0", "0", 2),
+            line("C", "after", 101000, 96000, "510.0", "10.0", "500.0", 2),
+            line("P", "reset", 200000, 190000, "900.0", "400.0", "500.0", 2),
+            line("C", "after", 201000, 191000, "0.0", "0.0", "0.0", 1),
+            line("P", "start", 210000, 0, "0.0", "0.0", "0", 1),
+            line("P", "lap", 300000, 90000, "300.0", "300.0", "0", 2),
+            line("C", "after", 301000, 91000, "310.0", "10.0", "300.0", 2),
+        )
+
+    def test_the_log_is_split_after_every_reset(self):
+        activities = probe.split_activities(self.two_activities())
+        self.assertEqual(len(activities), 2)
+        self.assertEqual([e.name for e in activities[0]][-1], "after")
+        self.assertEqual(activities[1][0].name, "start")
+
+    def test_a_reset_followed_by_zero_values_is_ok(self):
+        checks = probe.check_resets(self.two_activities())
+        self.assertEqual(len(checks), 1)
+        self.assertTrue(checks[0]["ok"])
+
+    def test_old_values_after_a_reset_are_flagged(self):
+        events = events_for(
+            line("P", "reset", 200000, 190000, "900.0", "400.0", "500.0", 2),
+            line("C", "after", 201000, 191000, "900.0", "400.0", "500.0", 2),
+        )
+        checks = probe.check_resets(events)
+        self.assertFalse(checks[0]["ok"])
+        self.assertEqual(checks[0]["previous"], 500.0)
+
+    def test_a_reset_without_an_after_line_is_unknown(self):
+        events = events_for(line("P", "reset", 200000, 190000, "900.0", "400.0", "500.0", 2))
+        self.assertIsNone(probe.check_resets(events)[0]["ok"])
+
+
 class VerdictTest(unittest.TestCase):
     def test_confirmed_when_a_boundary_fired_two_lap_events(self):
         events = events_for(

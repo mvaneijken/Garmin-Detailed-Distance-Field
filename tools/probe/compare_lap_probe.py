@@ -101,6 +101,50 @@ def read_fit_laps(path):
     return laps
 
 
+def split_activities(events):
+    """The log cut after every reset event (the activity ended). The C line after a reset stays with it."""
+    activities = []
+    current = []
+    index = 0
+    while index < len(events):
+        event = events[index]
+        current.append(event)
+        index += 1
+        if event.kind == "P" and event.name == "reset":
+            if index < len(events) and events[index].kind == "C":
+                current.append(events[index])
+                index += 1
+            activities.append(current)
+            current = []
+    if current:
+        activities.append(current)
+    return activities
+
+
+def check_resets(events):
+    """What the field shows right after every reset: both laps should be 0 (finding C2, scenario S7).
+
+    ok is None when the log has no C line after the reset (no compute ran before it ended).
+    """
+    checks = []
+    for index, event in enumerate(events):
+        if event.kind != "P" or event.name != "reset":
+            continue
+        after = events[index + 1] if index + 1 < len(events) and events[index + 1].kind == "C" else None
+        ok = None
+        if after is not None:
+            ok = (after.current or 0) < 1.0 and (after.previous or 0) < 1.0
+        checks.append(
+            {
+                "clock_ms": event.clock_ms,
+                "current": None if after is None else after.current,
+                "previous": None if after is None else after.previous,
+                "ok": ok,
+            }
+        )
+    return checks
+
+
 def _plural(count, singular, plural):
     return f"{count} {singular if count == 1 else plural}"
 
@@ -116,12 +160,10 @@ def compare(events, laps, double_gap_ms=DOUBLE_EVENT_GAP_MS, tolerance_m=5.0):
         if event.kind == "P":
             if event.name in LAP_EVENTS:
                 last = groups[-1] if groups else None
-                if (
-                    last is not None
-                    and last["after"] is None
-                    and event.clock_ms - last["events"][-1].clock_ms <= double_gap_ms
-                ):
+                if last is not None and event.clock_ms - last["events"][-1].clock_ms <= double_gap_ms:
+                    # Same boundary, even when a compute printed a C line in between: the latest C line wins.
                     last["events"].append(event)
+                    last["after"] = None
                 else:
                     last = {"events": [event], "after": None}
                     groups.append(last)
@@ -203,10 +245,31 @@ def format_markdown(rows, notes):
     return "\n".join(lines)
 
 
+def format_resets(checks):
+    lines = []
+    for number, check in enumerate(checks, start=1):
+        if check["ok"] is None:
+            state = "unknown (no compute line after the reset)"
+        elif check["ok"]:
+            state = f"OK: current {_cell(check['current'])} m, previous {_cell(check['previous'])} m"
+        else:
+            state = (
+                f"OLD VALUES: current {_cell(check['current'])} m, previous {_cell(check['previous'])} m "
+                "(finding C2: the laps of the old activity survive)"
+            )
+        lines.append(f"Reset {number}: {state}")
+    return "\n".join(lines)
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     parser.add_argument("--log", action="append", required=True, help="probe log; repeat for LAPPROBE.BAK first")
     parser.add_argument("--fit", help="saved activity (.fit) with the native lap table")
+    parser.add_argument(
+        "--activity",
+        type=int,
+        help="which activity of the log the FIT file belongs to (1 = the first, default: the last with laps)",
+    )
     parser.add_argument("--tolerance", type=float, default=5.0, help="allowed difference in meters")
     args = parser.parse_args(argv)
 
@@ -215,9 +278,20 @@ def main(argv=None):
         with open(path, encoding="utf-8", errors="replace") as handle:
             text += handle.read() + "\n"
     events = parse_probe_log(text)
+    activities = split_activities(events)
     laps = read_fit_laps(args.fit) if args.fit else None
-    rows, notes = compare(events, laps, tolerance_m=args.tolerance)
-    print(format_markdown(rows, notes))
+
+    with_laps = [i for i, part in enumerate(activities) if compare(part, None)[0]]
+    chosen = (args.activity - 1) if args.activity else (with_laps[-1] if with_laps else None)
+    for index, part in enumerate(activities):
+        rows, notes = compare(part, laps if index == chosen else None, tolerance_m=args.tolerance)
+        if len(activities) > 1:
+            print(f"### Activity {index + 1} of {len(activities)}" + (" (paired with the FIT file)" if index == chosen and laps else ""))
+        print(format_markdown(rows, notes))
+        print()
+    checks = check_resets(events)
+    if checks:
+        print(format_resets(checks))
     return 0
 
 
