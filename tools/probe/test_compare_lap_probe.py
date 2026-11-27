@@ -179,5 +179,55 @@ class FormatTest(unittest.TestCase):
         self.assertIn("C3 confirmed", text)
 
 
+_CRC_TABLE = [0x0000, 0xCC01, 0xD801, 0x1400, 0xF001, 0x3C00, 0x2800, 0xE401,
+              0xA001, 0x6C00, 0x7800, 0xB401, 0x5000, 0x9C01, 0x8801, 0x4400]
+
+
+def _fit_crc(data):
+    crc = 0
+    for byte in data:
+        for nibble in (byte & 0xF, (byte >> 4) & 0xF):
+            temp = _CRC_TABLE[crc & 0xF]
+            crc = (crc >> 4) & 0x0FFF
+            crc = crc ^ temp ^ _CRC_TABLE[nibble]
+    return crc
+
+
+def make_fit_with_laps(laps):
+    """A minimal FIT file with one lap message per (distance m, timer time s) pair."""
+    import struct
+
+    definition = struct.pack("<BBBHB", 0x40, 0, 0, 19, 2)  # lap message, 2 fields
+    definition += struct.pack("<BBB", 8, 4, 0x86)  # total_timer_time, uint32 (scale 1000)
+    definition += struct.pack("<BBB", 9, 4, 0x86)  # total_distance, uint32 (scale 100)
+    records = definition
+    for distance, timer_time in laps:
+        records += struct.pack("<BII", 0x00, round(timer_time * 1000), round(distance * 100))
+    header = struct.pack("<BBHI4s", 14, 0x20, 2100, len(records), b".FIT")
+    header += struct.pack("<H", 0)
+    body = header + records
+    return body + struct.pack("<H", _fit_crc(body))
+
+
+class ReadFitLapsTest(unittest.TestCase):
+    def test_reads_the_lap_table_of_a_fit_file(self):
+        try:
+            import fitdecode  # noqa: F401
+        except ImportError:
+            self.skipTest("fitdecode is not installed (tools/probe/requirements.txt)")
+        import os
+        import tempfile
+
+        with tempfile.TemporaryDirectory() as folder:
+            path = os.path.join(folder, "activity.fit")
+            with open(path, "wb") as handle:
+                handle.write(make_fit_with_laps([(500.0, 150.0), (300.25, 90.0)]))
+            laps = probe.read_fit_laps(path)
+        self.assertEqual([lap_["index"] for lap_ in laps], [1, 2])
+        self.assertAlmostEqual(laps[0]["distance"], 500.0)
+        self.assertAlmostEqual(laps[1]["distance"], 300.25)
+        self.assertAlmostEqual(laps[0]["timer_time"], 150.0)
+
+
 if __name__ == "__main__":
     unittest.main()
