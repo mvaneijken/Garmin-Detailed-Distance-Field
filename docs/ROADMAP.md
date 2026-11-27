@@ -36,7 +36,7 @@ Exit criterion: T0 memory in a release build at or below 12 KB (changed on 2026-
 
 | # | Item | Tier/API gate |
 |---|---|---|
-| 2.1 | Lap history ring buffer: distance, duration (`timerTime`), intensity, (later) avg power. Size configurable at build time per tier. | T1+ (T0 only if budget allows) |
+| 2.1 | Lap history ring buffer: distance, duration (`timerTime`), intensity, (later) avg power. Size configurable at build time per tier. **Implemented** (Phase 2 PR 2): `LapHistory` (`source/LapHistory.mc`, parallel arrays, newest lap first, a lap with under 1 m and under 1 s is not stored: C3 guard) and the `LapLog` module the view calls. The size follows the memory limit at run time (12 laps up to 32 KB, 50 above), which needs no per-tier constant. T1 and above only: the code carries the `t1` annotation and T0 devices get the `t0` no-op twins (+80 bytes on fenix3). The per-device tier lines are generated into `monkey.jungle` and `probe.jungle` by `tools/Get-DeviceTiers.ps1 -UpdateJungles`. Nothing shows the history yet: Phase 4 and 2.3 use it. | T1+ (T0 only if budget allows) |
 | 2.2 | Capture workout intensity via `getCurrentWorkoutStep()`; assign on lap close. | API ≥ 3.2.0 (`(:workoutinfo)`) |
 | 2.3 | Optional second-line content: previous lap distance (today) / lap time / lap pace — one setting, not three. **Implemented** (Phase 2 PR 1): setting "Second line shows" with previous lap distance (default), previous lap time, previous lap pace, current lap time and current lap number; `LapTracker` keeps the timer time and the lap number; the pace is rounded to a second, times are cut. On T0 it costs 1.5 KB of release memory (see `docs/MEMORY-BASELINE.md`). | all |
 

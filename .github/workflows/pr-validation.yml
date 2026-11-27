@@ -197,6 +197,12 @@ jobs:
           bash tools/ci/ciq-run.sh --mount "$RUNNER_TEMP/keys:/keys" -- \
             bash tools/ci/run-unit-tests.sh --source . --out out/tests --key /keys/developer_key.der --device fenix847mm
 
+      # T0 builds leave out the code of the higher tiers (tier annotations): run the tests there too.
+      - name: Unit tests (T0)
+        run: |
+          bash tools/ci/ciq-run.sh --mount "$RUNNER_TEMP/keys:/keys" -- \
+            bash tools/ci/run-unit-tests.sh --source . --out out/tests-t0 --key /keys/developer_key.der --device fenix3
+
       - name: Job summary
         if: always()
         run: |
