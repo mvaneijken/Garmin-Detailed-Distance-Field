@@ -14,15 +14,21 @@ module LapLog {
   (:t1)
   var history = null;
 
+  // The trigger stored for a lap that ended with onWorkoutStepComplete: the lap-trigger values of the watch
+  // (DataField.LAP_TRIGGER_*, 0 to 24) cover why a lap was made, but this event has none of its own.
+  const TRIGGER_STEP_COMPLETE = 100;
+
   (:t1)
   function start() {
     history = new LapHistory(capacityFor(Sys.getSystemStats().totalMemory));
   }
 
-  // Call after the tracker handled a lap event: its previous lap is the lap that just finished.
+  // Call after the tracker handled a lap event: its previous lap is the lap that just finished. trigger is
+  // why the lap was made: a DataField.LAP_TRIGGER_* value (devices with API 5.2.2, onTimerLap2),
+  // TRIGGER_STEP_COMPLETE, or null when the watch does not say (roadmap 2.2).
   (:t1)
-  function record(lap) {
-    history.add(lap.previousLap, lap.previousLapTime, null);
+  function record(lap, trigger) {
+    history.add(lap.previousLap, lap.previousLapTime, trigger);
   }
 
   (:t1)
@@ -34,7 +40,7 @@ module LapLog {
   function start() {}
 
   (:t0)
-  function record(lap) {}
+  function record(lap, trigger) {}
 
   (:t0)
   function reset() {}

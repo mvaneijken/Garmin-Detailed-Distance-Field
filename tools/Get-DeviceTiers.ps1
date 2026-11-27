@@ -78,6 +78,33 @@ $ExcludedAnnotationsByTier = @{
     T3  = 't0'
 }
 
+# Features that need a minimum Connect IQ (API) version, independent of the memory tier. Code that uses the
+# API carries the annotation (for example lapinfo, the onTimerLap2 callback with the lap trigger, API 5.2.2); a
+# device whose highest Connect IQ version is lower leaves it out. With Twin = $true the code also has a
+# no<feature> twin that those devices keep (and the others exclude). A firmware older than the highest
+# version still needs a `has` check at run time when the code calls into the API.
+$ApiFeatures = [ordered]@{
+    lapinfo = @{ Version = [version]'5.2.2'; Twin = $false }
+}
+
+function Get-ApiExclusions {
+    param(
+        [Parameter(Mandatory)]
+        [version]$MaxConnectIQVersion
+    )
+
+    foreach ($Feature in $ApiFeatures.Keys) {
+        if ($MaxConnectIQVersion -ge $ApiFeatures[$Feature].Version) {
+            if ($ApiFeatures[$Feature].Twin) {
+                "no$Feature"
+            }
+        }
+        else {
+            $Feature
+        }
+    }
+}
+
 function Get-DeviceTier {
     param(
         [Parameter(Mandatory)]
@@ -138,7 +165,7 @@ $Rows = foreach ($Product in $Products) {
         MinConnectIQ         = $Versions[0].ToString()
         MaxConnectIQ         = $Versions[-1].ToString()
         Tier                 = $Tier
-        ExcludeAnnotations   = $ExcludedAnnotationsByTier[$Tier]
+        ExcludeAnnotations   = (@($ExcludedAnnotationsByTier[$Tier] -split ';' | Where-Object { $_ }) + @(Get-ApiExclusions -MaxConnectIQVersion $Versions[-1])) -join ';'
     }
 }
 
