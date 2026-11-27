@@ -113,6 +113,8 @@ Phase 2 (roadmap 2.3, second line with five contents), measured in bytes in one 
 | `master` after PR 3 (control) | 9712 | |
 | 2.3: lap time, lap pace, current lap time, lap number | 11192 | +1480 |
 
+The lap probe of roadmap 0.5 adds only empty calls to a normal build: 11288 bytes (+96) in the release build, 13384 in the debug build.
+
 The debug build uses 12888 bytes. The setting does not change the number: the default (previous lap distance) and "current lap time" give the same value, because the code is the same and only the label differs. The growth is code, not data: two time formatters, the five-way content choice, the lap timer fields and the label loading. It is the largest step since the baseline and it takes the T0 release usage to 10.9 KB (1024-byte KB) of the 12 KB gate below.
 
 What this shows:

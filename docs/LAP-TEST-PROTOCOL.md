@@ -2,11 +2,11 @@
 
 The lap behaviour of the field depends on events that only a real device (or a simulator with activity playback) produces. The open questions are findings C2 to C5 in `docs/ANALYSIS.md` section 3. Run this protocol once on the fēnix 9 Pro and once on an older device or simulator target, record the results below, and use them to decide the Phase 1 fixes (`onTimerReset`, lap-event de-duplication, multisport).
 
-Nothing here needs a code change. Use the build of the current `master`.
+Use the **probe build** (next section): the same code as `master` plus a short log line for every timer event. Nothing else changes in the field.
 
 ## Setup
 
-1. Install the field from a build of `master` (sideload the `.prg` of your device, or use the simulator).
+1. Build the probe for your device with `tools/probe/Build-LapProbe.ps1` (see the run sheet below) and sideload the `LAPPROBE.PRG` of your device, or use the simulator.
 2. Add the field to a data screen that also shows the native **Lap Distance** and **Last Lap Distance** fields, so each scenario can be compared with the native value.
 3. Note device, firmware, field version and Connect IQ version in the results table.
 4. After each scenario, check the lap table of the saved activity in Garmin Connect when possible. The FIT laps are the reference for lap distances.
@@ -49,11 +49,46 @@ Why layer 2 cannot be scripted (evidence level: forum reports, not Garmin docume
 
 What can be made cheap on the device: a probe build plus a log and a FIT comparison, so nobody has to write values down by hand.
 
-1. **Probe build** (a build flavour or branch, never released): every callback (`onTimerStart`, `onTimerLap`, `onTimerStop`, `onTimerReset`, `onWorkoutStepComplete`, `onNextMultisportLeg`) prints one short line: `timerTime,event,elapsedDistance,currentLap,previousLap`. Print on events only, never on every `compute` or distance change: the lap distance changes continuously and would fill the small log within a minute. The values after an event are read by printing one extra line at the first `compute` after it.
+All three parts are written: `source/Probe.mc` with `probe.jungle`, `tools/probe/Build-LapProbe.ps1` and `tools/probe/compare_lap_probe.py`; the run sheet follows below.
+
+1. **Probe build** (a build flavour, never released): every callback (`onTimerStart`, `onTimerLap`, `onTimerStop`, `onTimerReset`, `onWorkoutStepComplete`, `onNextMultisportLeg`) prints one short line: `timerTime,event,elapsedDistance,currentLap,previousLap`. Print on events only, never on every `compute` or distance change: the lap distance changes continuously and would fill the small log within a minute. The values after an event are read by printing one extra line at the first `compute` after it.
 2. **Device log**: sideload the probe `.prg`, create an empty `GARMIN/APPS/LOGS/<PRG name>.TXT` on the watch, run one scenario per activity, then read the file. Limits from the Connect IQ developer FAQ (community wiki, not verified on the fēnix 9 Pro): the file is not created automatically, it rolls over to a `.BAK` file after about 5 KB, and heavy printing slows the watch. Keep lines short and print only on events.
-3. **Comparison**: a script reads the log and the lap table of the saved activity (the FIT file, parsed with a FIT tool such as the FIT SDK's `FitCSVTool`) and prints, per lap, the native lap distance next to the value the field showed. Its output is the Results table below. This script and the probe build are new work and are not written yet.
+3. **Comparison**: a script reads the log and the lap table of the saved activity (the FIT file, parsed with a FIT tool such as the FIT SDK's `FitCSVTool`) and prints, per lap, the native lap distance next to the value the field showed. Its output is the Results table below. The script flags `DOUBLE EVENT` (two lap events within 2 s), `PREVIOUS = 0`, `DIFF > 5 m` and `NEGATIVE`, and ends with a one-line verdict for finding C3.
 
 Still manual, about 15 minutes per device: doing the activity (the runs, the lap button presses, the workout, the multisport switch).
+
+## Run sheet (probe build)
+
+### One-time preparation
+
+1. Make a throwaway developer key (a sideload does not need the store key):
+   `openssl genrsa -out key.pem 4096` and `openssl pkcs8 -topk8 -inform PEM -outform DER -in key.pem -out throwaway.der -nocrypt`.
+2. Build: `.\tools\probe\Build-LapProbe.ps1 -KeyPath <throwaway.der> -Devices fenix9pro47mm, fenix3`. The result is `tools\probe\out\<device>\LAPPROBE.PRG`. The file name is fixed on purpose: it names the log.
+3. Python tools (once): `python -m venv tools\probe\.venv`, then `tools\probe\.venv\Scripts\pip install -r tools\probe\requirements.txt`.
+4. Watch: connect it by USB, copy `LAPPROBE.PRG` to `GARMIN/APPS`, and create an empty file `GARMIN/APPS/LOGS/LAPPROBE.TXT`. The watch does not create the log file itself. Add the probe field (name: Detailed Lap Distance) to a data screen next to the native **Lap Distance** and **Last Lap Distance** fields, with the second line on.
+
+### One scenario, one activity
+
+Run each scenario as its own activity and keep it short (the log holds about 100 lines; it rolls over to `LAPPROBE.BAK` after about 5 KB). Save the activity at the end (this also tests S7's `onTimerReset`). After the run:
+
+1. Connect the watch by USB (read the log after the activity is stopped and saved: it may be written late). Copy `GARMIN/APPS/LOGS/LAPPROBE.TXT` (and `LAPPROBE.BAK` if it exists) and the newest file of `GARMIN/Activity` (`.fit`). Empty the log file again before the next scenario (delete its content, keep the file).
+2. Run the script: `tools\probe\.venv\Scripts\python tools\probe\compare_lap_probe.py --log LAPPROBE.BAK --log LAPPROBE.TXT --fit <activity>.fit` (leave `--log LAPPROBE.BAK` out when there is no `.BAK`). Keep the `.fit` file private (it holds a GPS track); the log is safe to share.
+3. Paste the table into the Results below, with the verdict line. A log with more than one activity (S7) is cut after every reset: the script prints one table per activity, pairs the FIT file with the last activity that has laps (`--activity N` picks another one), and ends with a `Reset n: OK` or `OLD VALUES` line, which is the answer for finding C2.
+
+### What to press, per scenario
+
+| # | Presses |
+|---|---|
+| S1 | Start. Run about 300 m. Press lap. Run about 200 m. Press lap. Run 100 m. Stop and save. |
+| S2 | Set auto lap to 0.5 km first. Start and run past two boundaries (1.2 km). Stop and save. |
+| S3 | Run a workout with two distance steps (400 m, 200 m) and a third step. Let two steps end by themselves. Stop and save. |
+| S4 | Run a workout whose first step ends on the lap button. Run 200 m, press lap. Run a distance step. Stop and save. |
+| S5 | Run a short workout and let the **last** step finish. Wait 10 s. Stop and save. |
+| S6 | Start, run 200 m, press lap, run 100 m, undo the lap (if the watch offers it), run 100 m. Stop and save. |
+| S7 | Run 300 m with two laps, stop and save, then start a new activity of the same profile without leaving the data screen and wait 15 s. |
+| S8 | Start a triathlon or multisport profile, run 200 m, switch leg (transition), go 200 m. Stop and save. |
+
+The simulator (S1, S2 and S7 on fenix3): run `monkeydo tools\probe\out\fenix3\LAPPROBE.PRG fenix3` with the console captured to a file, press the lap and timer commands of its Simulation menu, and give that file to `--log`. There is no FIT file; the table then has an empty native column.
 
 ## Results
 

@@ -27,24 +27,35 @@ if ! grep -rqs '(:test)' "$source_dir/source" "$source_dir"/source-* 2>/dev/null
 fi
 
 mkdir -p "$out_dir"
-test_prg="$out_dir/unit-test-$device.prg"
-monkeyc -f "$source_dir/monkey.jungle" -d "$device" -o "$test_prg" -y "$key_file" --unit-test
 
-log="$out_dir/unit-test-$device.log"
-# The simulator must be running before monkeydo can load the program into it.
-# monkeydo exits with status 1 even when every test passed (SDK 9.3.0, Linux), so its exit status
-# is ignored: the verdict is the result line it prints ("PASSED (passed=..)" or "FAILED (..)").
-xvfb-run --auto-servernum bash -c "
-  connectiq &
-  sim_pid=\$!
-  sleep 15
-  monkeydo '$test_prg' '$device' -t > '$log' 2>&1 || true
-  kill \$sim_pid || true
-" || true
+# One pass builds with the given jungle and runs the tests in the simulator.
+run_pass() {
+  local jungle="$1" tag="$2"
+  local test_prg="$out_dir/unit-test-$tag$device.prg"
+  monkeyc -f "$source_dir/$jungle" -d "$device" -o "$test_prg" -y "$key_file" --unit-test
 
-cat "$log"
-printf '\n## Unit tests (%s)\n\n```\n%s\n```\n' "$device" "$(tail -n 40 "$log")" >> "$summary"
-if ! grep -q '^PASSED (' "$log"; then
-  echo "::error::Unit tests failed on $device (no PASSED result line in the output above)"
-  exit 1
+  local log="$out_dir/unit-test-$tag$device.log"
+  # The simulator must be running before monkeydo can load the program into it.
+  # monkeydo exits with status 1 even when every test passed (SDK 9.3.0, Linux), so its exit status
+  # is ignored: the verdict is the result line it prints ("PASSED (passed=..)" or "FAILED (..)").
+  xvfb-run --auto-servernum bash -c "
+    connectiq &
+    sim_pid=\$!
+    sleep 15
+    monkeydo '$test_prg' '$device' -t > '$log' 2>&1 || true
+    kill \$sim_pid || true
+  " || true
+
+  cat "$log"
+  printf '\n## Unit tests (%s%s)\n\n```\n%s\n```\n' "$tag" "$device" "$(tail -n 40 "$log")" >> "$summary"
+  if ! grep -q '^PASSED (' "$log"; then
+    echo "::error::Unit tests ($tag$device) failed (no PASSED result line in the output above)"
+    return 1
+  fi
+}
+
+run_pass monkey.jungle ''
+# The lap probe (roadmap 0.5) has its own tests, compiled in only by probe.jungle.
+if [ -f "$source_dir/probe.jungle" ]; then
+  run_pass probe.jungle 'probe-'
 fi
