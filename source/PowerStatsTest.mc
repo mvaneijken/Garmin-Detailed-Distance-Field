@@ -86,7 +86,7 @@ function testLapLogKeepsThePowerOfEachLap(logger) {
   lap.onDistance(400.0);
   lap.onTimer(90000);
   lap.onLap();
-  LapLog.record(lap);
+  LapLog.record(lap, null);
   Test.assertEqual(LapLog.history.powerAt(0), 210);
   Test.assertMessage(LapLog.lapAveragePower() == null, "the next lap starts empty");
   LapLog.onPower(300);
