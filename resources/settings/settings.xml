@@ -11,6 +11,13 @@
 			<listEntry value="2">@Strings.secondline2</listEntry>
 			<listEntry value="3">@Strings.secondline3</listEntry>
 			<listEntry value="4">@Strings.secondline4</listEntry>
+			<listEntry value="5">@Strings.secondline5</listEntry>
+			<listEntry value="6">@Strings.secondline6</listEntry>
+			<listEntry value="7">@Strings.secondline7</listEntry>
+			<listEntry value="8">@Strings.secondline8</listEntry>
+			<listEntry value="9">@Strings.secondline9</listEntry>
+			<listEntry value="10">@Strings.secondline10</listEntry>
+			<listEntry value="11">@Strings.secondline11</listEntry>
 		</settingConfig>
 	</setting>
 	<setting propertyKey="@Properties.hideLabel"

@@ -50,6 +50,9 @@ module Format {
       return durationString(lap.currentLapTime);
     } else if (content == 4) {
       return lap.lapNumber.toString();
+    } else if (content >= 5) {
+      // power, cadence and pace come from the sensors (T1 and above, see SensorLine)
+      return SensorLine.value(content, unitMeters);
     }
     return distanceString(lap.previousLap, unitMeters, settings);
   }

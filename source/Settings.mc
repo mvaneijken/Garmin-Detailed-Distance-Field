@@ -6,7 +6,8 @@ using Toybox.Application as App;
 class Settings {
   var showLastLap = false;
   // What the second line shows: 0 previous lap distance, 1 previous lap time, 2 previous lap pace,
-  // 3 current lap time, 4 current lap number.
+  // 3 current lap time, 4 current lap number, 5 power, 6 power of the last 3 s, 7 of the last 10 s,
+  // 8 of the last 30 s, 9 average power of the lap, 10 cadence, 11 pace.
   var secondLine = 0;
   var zeroToOneDigits = 3;
   var oneToTenDigits = 3;
@@ -21,7 +22,7 @@ class Settings {
 
   function load() {
     showLastLap = readProperty("showLastLap_prop") == true;
-    secondLine = clamp(readProperty("secondline"), 0, 4, 0);
+    secondLine = clamp(readProperty("secondline"), 0, 11, 0);
     zeroToOneDigits = clamp(readProperty("zerotoone"), 0, 3, 3);
     oneToTenDigits = clamp(readProperty("onetoten"), 0, 3, 3);
     tenToHundredDigits = clamp(readProperty("tentohundred"), 0, 3, 3);
@@ -30,6 +31,11 @@ class Settings {
     overrideSizing = readProperty("overridesizeing") == true;
     heightOversize = clamp(readProperty("heightoversizeoverride"), 50, 150, 100);
     widthOversize = clamp(readProperty("widthoversizeoverride"), 50, 150, 100);
+  }
+
+  // The second line changes every second (current lap time and the sensor values) and not only at a lap.
+  function isLiveSecondLine() {
+    return secondLine == 3 || secondLine >= 5;
   }
 
   // value as a whole number between low and high; the fallback when it is missing or not a number.

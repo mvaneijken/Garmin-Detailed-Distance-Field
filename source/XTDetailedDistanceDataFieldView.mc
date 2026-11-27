@@ -51,6 +51,8 @@ class XTDetailedDistanceDataFieldView extends Ui.DataField {
     if (info has :timerTime) {
       lap.onTimer(info.timerTime);
     }
+    // Power, cadence and speed come from the watch: a Stryd paired as power sensor and foot pod shows up here.
+    SensorLine.sample(info);
     Probe.afterCompute(lap);
   }
 
@@ -59,9 +61,9 @@ class XTDetailedDistanceDataFieldView extends Ui.DataField {
   function onUpdate(dc) {
     // The device unit can change while the field runs and no event reports it.
     refreshUnit();
-    // The time of the current lap changes every second; the other contents only at a lap boundary.
-    // A hidden line is not built: enabling it in the settings rebuilds the text.
-    if (settings.showLastLap && settings.secondLine == 3) {
+    // The time of the current lap and the sensor values change every second; the other contents only at a
+    // lap boundary. A hidden line is not built: enabling it in the settings rebuilds the text.
+    if (settings.showLastLap && settings.isLiveSecondLine()) {
       buildSecondLineText();
     }
     var lapDistanceString = Format.distanceString(
@@ -179,17 +181,7 @@ class XTDetailedDistanceDataFieldView extends Ui.DataField {
 
   // Only the label of the chosen content is kept in memory.
   hidden function loadSecondLineLabel() {
-    var label = Rez.Strings.lastlaplabel;
-    if (settings.secondLine == 1) {
-      label = Rez.Strings.lastlaptimelabel;
-    } else if (settings.secondLine == 2) {
-      label = Rez.Strings.lastlappacelabel;
-    } else if (settings.secondLine == 3) {
-      label = Rez.Strings.laptimelabel;
-    } else if (settings.secondLine == 4) {
-      label = Rez.Strings.lapnumberlabel;
-    }
-    secondLineLabel = Ui.loadResource(label);
+    secondLineLabel = Ui.loadResource(SensorLine.labelId(settings.secondLine));
   }
 
   // Which build runs: printed once at start in builds without -r, so a measurement can be tied to

@@ -56,12 +56,12 @@ Metric availability by transport (details and evidence levels in `ANALYSIS.md` �
 | # | Item | Tier/API gate |
 |---|---|---|
 | 3.1 | **Spike (go/no-go):** capture what the owner's Stryd actually broadcasts: ANT+ device types/pages (ANT USB stick + ANTware/SimulANT+ or similar) and BLE services (nRF Connect). Output: table of profiles, pages, data and update rate. | — (on owner's hardware) |
-| 3.2 | Power via `Activity.Info.currentPower`; current, 3 s/10 s/30 s rolling, lap average. Stryd paired natively as power sensor. | all tiers; rolling windows T1+ |
-| 3.3 | Pace/cadence/distance via native foot-pod pairing (no code beyond selecting the metric). | all |
+| 3.2 | Power via `Activity.Info.currentPower`; current, 3 s/10 s/30 s rolling, lap average. Stryd paired natively as power sensor. **Implemented** (Phase 3 PR 1): second-line contents power, 3 s, 10 s and 30 s power and lap average power (`SensorLine`, `PowerStats`; the lap average is also stored per lap in the history). Decision: all of it is T1 and above, T0 shows `--`: the first version with the sensor code on T0 took the fenix3 release build to 12568 bytes (over the 12 KB gate); with the twins it is 11944. | all tiers; rolling windows T1+ |
+| 3.3 | Pace/cadence/distance via native foot-pod pairing (no code beyond selecting the metric). **Implemented** (Phase 3 PR 1) as the second-line contents cadence and current pace from `Activity.Info`; distance already comes from the watch. T1 and above. | all |
 | 3.4 | GCT / VO via `AntPlus.RunningDynamics`, if 3.1 shows that the Stryd broadcasts this profile. | API ≥ 2.4.0, T1+ |
 | 3.5 | Form power / air power / LSS via own `Ant.GenericChannel` decoder — **only if 3.1 shows they can be decoded reliably** and the legal/terms check passes. Fallback: these metrics remain available in Stryd PowerCenter through the pod's offline sync (no watch field needed). | T1+/T2 (measure) |
 | 3.6 | Record Stryd metrics to the FIT file via `FitContributor` so they reach Garmin Connect / third parties without Stryd Zones. Mind the 16-developer-field per-activity budget shared with other CIQ fields. | API ≥ 1.3.0, T1+ |
-| 3.7 | User documentation: pairing (power + foot pod), ANT ID, offline sync for PowerCenter, what Stryd Zones features are *not* replaced (zones sync, Stryd workouts). | — |
+| 3.7 | **Started**: `docs/POWER-AND-STRYD.md` (what the field shows, pairing hints to confirm on a watch, what is not replaced). User documentation: pairing (power + foot pod), ANT ID, offline sync for PowerCenter, what Stryd Zones features are *not* replaced (zones sync, Stryd workouts). | — |
 
 ## Phase 4 — Lap bar chart background (→ 2.7.0)
 

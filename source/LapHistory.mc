@@ -16,6 +16,7 @@ class LapHistory {
   hidden var distances;
   hidden var durations;
   hidden var triggers;
+  hidden var powers;
   // Where the next lap goes.
   hidden var next = 0;
 
@@ -24,17 +25,20 @@ class LapHistory {
     distances = new [size];
     durations = new [size];
     triggers = new [size];
+    powers = new [size];
   }
 
-  // Stores a finished lap. Returns false for an empty lap (under 1 m and under 1 s): that is what a second
+  // Stores a finished lap: the trigger (why the lap was made) and the average power may be null (the watch does
+  // not say, no power meter). Returns false for an empty lap (under 1 m and under 1 s): that is what a second
   // event at the same boundary produces (finding C3), and it would waste a slot and skew a chart.
-  function add(distance, duration, trigger) {
+  function add(distance, duration, trigger, power) {
     if (distance < MIN_DISTANCE && duration < MIN_DURATION) {
       return false;
     }
     distances[next] = distance;
     durations[next] = duration;
     triggers[next] = trigger;
+    powers[next] = power;
     next = (next + 1) % capacity;
     if (count < capacity) {
       count += 1;
@@ -55,6 +59,11 @@ class LapHistory {
   function triggerAt(age) {
     var slot = slotOf(age);
     return slot < 0 ? null : triggers[slot];
+  }
+
+  function powerAt(age) {
+    var slot = slotOf(age);
+    return slot < 0 ? null : powers[slot];
   }
 
   function clear() {

@@ -44,6 +44,22 @@ function testSettingsClampFallsBackWhenNotANumber(logger) {
 }
 
 (:test)
+function testSettingsLiveSecondLine(logger) {
+  var settings = new Settings();
+  settings.secondLine = 0;
+  Test.assertMessage(!settings.isLiveSecondLine(), "previous lap distance changes at a lap only");
+  settings.secondLine = 4;
+  Test.assertMessage(!settings.isLiveSecondLine(), "the lap number too");
+  settings.secondLine = 3;
+  Test.assertMessage(settings.isLiveSecondLine(), "the current lap time changes every second");
+  settings.secondLine = 5;
+  Test.assertMessage(settings.isLiveSecondLine(), "so does power");
+  settings.secondLine = 11;
+  Test.assertMessage(settings.isLiveSecondLine(), "and pace");
+  return true;
+}
+
+(:test)
 function testSettingsClampConvertsNumbersInOtherTypes(logger) {
   var settings = new Settings();
   Test.assertEqualMessage(settings.clamp(2.9, 0, 3, 3), 2, "a float is cut to a whole number");
