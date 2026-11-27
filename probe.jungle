@@ -1,0 +1,4 @@
+# Lap probe build for the device test of roadmap 0.5 (tools/probe/Build-LapProbe.ps1). Never released.
+project.manifest = manifest.xml
+base.sourcePath = source
+base.excludeAnnotations = noprobe

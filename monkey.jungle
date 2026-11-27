@@ -4,3 +4,6 @@ project.manifest = manifest.xml
 # copies of the sources in nested folders such as .claude/worktrees/*/source and fails the build with
 # "Redefinition of ..." errors. Only the source folder is part of the app.
 base.sourcePath = source
+
+# Probe code (source/Probe.mc, roadmap 0.5) is only compiled in by probe.jungle.
+base.excludeAnnotations = probe

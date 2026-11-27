@@ -5,3 +5,7 @@ build/
 *.der
 *.pem
 .ci-summary.md
+.venv/
+__pycache__/
+# Activity files with a GPS track: never commit them
+*.fit

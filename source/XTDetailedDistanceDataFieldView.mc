@@ -50,6 +50,7 @@ class XTDetailedDistanceDataFieldView extends Ui.DataField {
     if (info has :timerTime) {
       lap.onTimer(info.timerTime);
     }
+    Probe.afterCompute(lap);
   }
 
   // Display the value you computed here. This will be called
@@ -113,17 +114,46 @@ class XTDetailedDistanceDataFieldView extends Ui.DataField {
   function onTimerLap() {
     lap.onLap();
     buildSecondLineText();
+    Probe.event("lap", lap);
   }
 
   function onWorkoutStepComplete() {
     lap.onLap();
     buildSecondLineText();
+    Probe.event("step", lap);
   }
 
   // The timer was reset (activity saved or discarded): forget the laps of the previous activity.
   function onTimerReset() {
     lap.reset();
     buildSecondLineText();
+    Probe.event("reset", lap);
+  }
+
+  // Events the field does not use: only the probe build logs them (roadmap 0.5).
+  (:probe)
+  function onTimerStart() {
+    Probe.event("start", lap);
+  }
+
+  (:probe)
+  function onTimerStop() {
+    Probe.event("stop", lap);
+  }
+
+  (:probe)
+  function onTimerPause() {
+    Probe.event("pause", lap);
+  }
+
+  (:probe)
+  function onTimerResume() {
+    Probe.event("resume", lap);
+  }
+
+  (:probe)
+  function onNextMultisportLeg() {
+    Probe.event("leg", lap);
   }
 
   hidden function buildSecondLineText() {

@@ -19,7 +19,7 @@ Run "Publish Release" (tag x.y.z)
 
 | Workflow | Trigger | Purpose |
 |---|---|---|
-| `pr-validation.yml` | `/validate` comment on a PR (owner/member/collaborator), or dispatch with `pr_number` | Action-pin check, full `.iq` export for all manifest products, per-tier `.prg` builds with sizes, unit tests. Reports the commit status `PR Validation`. |
+| `pr-validation.yml` | `/validate` comment on a PR (owner/member/collaborator), or dispatch with `pr_number` | Action-pin check, full `.iq` export for all manifest products, per-tier `.prg` builds with sizes, unit tests (two passes: the normal build, and the build with `probe.jungle` that also compiles and tests the lap probe of roadmap 0.5). Reports the commit status `PR Validation`. |
 | `dependency-review.yml` | every `pull_request` | Vulnerability/licence gate on the action dependencies. |
 | `release.yml` | manual dispatch on master, input `version` | Version check, signed build, tag, draft release. |
 | `publish-release.yml` | manual dispatch on master, input `tag` | Environment `release` approval, package verification, publish. |
