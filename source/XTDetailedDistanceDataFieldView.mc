@@ -21,6 +21,7 @@ class XTDetailedDistanceDataFieldView extends Ui.DataField {
     settings = new Settings();
     settings.load();
     lap = new LapTracker();
+    LapLog.start();
     layout = new Layout();
     labelText = Ui.loadResource(Rez.Strings.label);
     loadSecondLineLabel();
@@ -113,12 +114,14 @@ class XTDetailedDistanceDataFieldView extends Ui.DataField {
 
   function onTimerLap() {
     lap.onLap();
+    LapLog.record(lap);
     buildSecondLineText();
     Probe.event("lap", lap);
   }
 
   function onWorkoutStepComplete() {
     lap.onLap();
+    LapLog.record(lap);
     buildSecondLineText();
     Probe.event("step", lap);
   }
@@ -126,6 +129,7 @@ class XTDetailedDistanceDataFieldView extends Ui.DataField {
   // The timer was reset (activity saved or discarded): forget the laps of the previous activity.
   function onTimerReset() {
     lap.reset();
+    LapLog.reset();
     buildSecondLineText();
     Probe.event("reset", lap);
   }
