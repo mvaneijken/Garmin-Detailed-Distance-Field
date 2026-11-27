@@ -51,7 +51,6 @@ class XTDetailedDistanceDataFieldView extends Ui.DataField {
     if (info has :timerTime) {
       lap.onTimer(info.timerTime);
     }
-    WorkoutIntensity.read();
     Probe.afterCompute(lap);
   }
 
@@ -114,17 +113,29 @@ class XTDetailedDistanceDataFieldView extends Ui.DataField {
   }
 
   function onTimerLap() {
-    lap.onLap();
-    LapLog.record(lap);
-    buildSecondLineText();
-    Probe.event("lap", lap);
+    handleLap("lap", null);
+  }
+
+  // Devices with Connect IQ 5.2.2 call this one first and tell why the lap was made
+  // (DataField.LAP_TRIGGER_*: manual, by time, by distance, workout step, ...). Returning true means
+  // handled: onTimerLap() is not called for the same lap. (roadmap 2.2)
+  (:lapinfo)
+  function onTimerLap2(info) {
+    var trigger = info == null ? null : info[:lapTrigger];
+    handleLap("lap2_" + trigger, trigger);
+    return true;
   }
 
   function onWorkoutStepComplete() {
+    handleLap("step", LapLog.TRIGGER_STEP_COMPLETE);
+  }
+
+  // One lap boundary, from a timer lap or the end of a workout step. event names it in the probe log.
+  hidden function handleLap(event, trigger) {
     lap.onLap();
-    LapLog.record(lap);
+    LapLog.record(lap, trigger);
     buildSecondLineText();
-    Probe.event("step", lap);
+    Probe.event(event, lap);
   }
 
   // The timer was reset (activity saved or discarded): forget the laps of the previous activity.

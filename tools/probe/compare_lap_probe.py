@@ -20,13 +20,13 @@ from dataclasses import dataclass, field
 from typing import List, Optional
 
 # Events that start a new lap in the field. start, stop, pause, resume and reset are logged but are not boundaries.
-LAP_EVENTS = ("lap", "step", "leg")
+LAP_EVENTS = ("lap", "step", "leg")  # also lap2_<trigger> (onTimerLap2 with the lap trigger)
 # Two lap events this close together belong to one boundary.
 DOUBLE_EVENT_GAP_MS = 2000
 
 _NUMBER = r"-?[0-9.]+(?:[eE][-+]?[0-9]+)?|null"
 _LINE = re.compile(
-    r"^(?P<kind>[PC]),(?P<name>[a-z]+),"
+    r"^(?P<kind>[PC]),(?P<name>[a-z0-9_]+),"
     rf"(?P<clock>-?\d+),(?P<timer>{_NUMBER}),(?P<distance>{_NUMBER}),"
     rf"(?P<current>{_NUMBER}),(?P<previous>{_NUMBER}),(?P<number>\d+|null)$"
 )
@@ -158,7 +158,7 @@ def compare(events, laps, double_gap_ms=DOUBLE_EVENT_GAP_MS, tolerance_m=5.0):
     waiting_for_after = None
     for event in events:
         if event.kind == "P":
-            if event.name in LAP_EVENTS:
+            if event.name in LAP_EVENTS or event.name.startswith("lap2_"):
                 last = groups[-1] if groups else None
                 if last is not None and event.clock_ms - last["events"][-1].clock_ms <= double_gap_ms:
                     # Same boundary, even when a compute printed a C line in between: the latest C line wins.

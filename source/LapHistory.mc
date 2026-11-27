@@ -1,5 +1,5 @@
 // A ring buffer of the finished laps (roadmap 2.1): distance, duration and, when the device knows it, the
-// workout intensity. The newest lap has age 0. When the buffer is full, a new lap replaces the oldest one.
+// lap trigger. The newest lap has age 0. When the buffer is full, a new lap replaces the oldest one.
 // The three values live in parallel arrays: no object per lap, so a lap costs a few bytes.
 //
 // Only devices with enough memory have it (the t1 annotation, see tools/Get-DeviceTiers.ps1); T0 gets the
@@ -15,7 +15,7 @@ class LapHistory {
   hidden var capacity;
   hidden var distances;
   hidden var durations;
-  hidden var intensities;
+  hidden var triggers;
   // Where the next lap goes.
   hidden var next = 0;
 
@@ -23,18 +23,18 @@ class LapHistory {
     capacity = size;
     distances = new [size];
     durations = new [size];
-    intensities = new [size];
+    triggers = new [size];
   }
 
   // Stores a finished lap. Returns false for an empty lap (under 1 m and under 1 s): that is what a second
   // event at the same boundary produces (finding C3), and it would waste a slot and skew a chart.
-  function add(distance, duration, intensity) {
+  function add(distance, duration, trigger) {
     if (distance < MIN_DISTANCE && duration < MIN_DURATION) {
       return false;
     }
     distances[next] = distance;
     durations[next] = duration;
-    intensities[next] = intensity;
+    triggers[next] = trigger;
     next = (next + 1) % capacity;
     if (count < capacity) {
       count += 1;
@@ -52,9 +52,9 @@ class LapHistory {
     return slot < 0 ? null : durations[slot];
   }
 
-  function intensityAt(age) {
+  function triggerAt(age) {
     var slot = slotOf(age);
-    return slot < 0 ? null : intensities[slot];
+    return slot < 0 ? null : triggers[slot];
   }
 
   function clear() {

@@ -132,6 +132,18 @@ class CompareTest(unittest.TestCase):
         rows, _ = probe.compare(events, [lap(1, 500.0), lap(2, 300.0)])
         self.assertIsNone(rows[0].shown_previous)
 
+    def test_a_lap_with_its_trigger_counts_and_a_step_before_it_is_a_double_event(self):
+        # lap2_<trigger> is the onTimerLap2 callback of API 5.2.2; 21 = LAP_TRIGGER_WORKOUT_STEP_PREVIOUS
+        events = events_for(
+            line("P", "step", 200000, 190000, "400.0", "400.0", "0", 2),
+            line("P", "lap2_21", 200040, 190040, "400.0", "0.0", "0.0", 3),
+            line("C", "after", 201000, 191000, "410.0", "10.0", "0.0", 3),
+        )
+        rows, _ = probe.compare(events, [lap(1, 400.0), lap(2, 200.0)])
+        self.assertEqual(len(rows), 1)
+        self.assertEqual(rows[0].events, ["step", "lap2_21"])
+        self.assertIn("DOUBLE EVENT", rows[0].flags)
+
     def test_timer_events_are_not_lap_boundaries(self):
         events = events_for(
             line("P", "start", 1000, 0, "0.0", "0.0", "0", 1),

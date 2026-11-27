@@ -41,14 +41,14 @@ function testHistoryDropsTheOldestWhenFull(logger) {
 }
 
 (:test, :t1)
-function testHistoryStoresTheIntensity(logger) {
+function testHistoryStoresTheLapTrigger(logger) {
   var history = new LapHistory(3);
-  history.add(400.0, 90000, 1);
+  history.add(400.0, 90000, 0);
   history.add(200.0, 60000, 2);
   history.add(400.0, 90000, null);
-  Test.assertMessage(history.intensityAt(0) == null, "unknown intensity");
-  Test.assertEqual(history.intensityAt(1), 2);
-  Test.assertEqual(history.intensityAt(2), 1);
+  Test.assertMessage(history.triggerAt(0) == null, "the watch did not say why");
+  Test.assertEqual(history.triggerAt(1), 2);
+  Test.assertEqual(history.triggerAt(2), 0);
   return true;
 }
 
@@ -89,45 +89,28 @@ function testHistoryCapacityFollowsTheMemory(logger) {
   return true;
 }
 
-// Roadmap 2.2: a finished lap takes the workout intensity the field saw at the last compute, which is the
-// intensity of the step that just ended even when the watch has already moved on to the next step.
+// Roadmap 2.2 (reworked): a data field cannot read the workout step (Activity.getCurrentWorkoutStep throws
+// in a data field), so a finished lap stores why it was made instead: the lap trigger of onTimerLap2
+// (API 5.2.2), a marker for onWorkoutStepComplete, or null when the watch does not say.
 (:test, :t1)
-function testLapLogStoresTheIntensityOfTheStepThatEnded(logger) {
+function testLapLogStoresTheTriggerOfTheLap(logger) {
   LapLog.start();
   var lap = new LapTracker();
-  LapLog.setIntensity(0);
   lap.onDistance(400.0);
   lap.onTimer(90000);
   lap.onLap();
-  LapLog.record(lap);
-  // the next step has started (recovery), but the previous lap was already recorded
-  LapLog.setIntensity(4);
+  LapLog.record(lap, 2);
   lap.onDistance(600.0);
   lap.onTimer(150000);
   lap.onLap();
-  LapLog.record(lap);
-  Test.assertEqualMessage(LapLog.history.intensityAt(1), 0, "the first lap was an active step");
-  Test.assertEqualMessage(LapLog.history.intensityAt(0), 4, "the second lap was a recovery step");
-  LapLog.setIntensity(null);
+  LapLog.record(lap, LapLog.TRIGGER_STEP_COMPLETE);
   lap.onDistance(800.0);
   lap.onTimer(200000);
   lap.onLap();
-  LapLog.record(lap);
-  Test.assertMessage(LapLog.history.intensityAt(0) == null, "a lap outside a workout has no intensity");
-  LapLog.reset();
-  return true;
-}
-
-(:test, :t1)
-function testLapLogResetClearsTheIntensity(logger) {
-  LapLog.start();
-  LapLog.setIntensity(5);
-  LapLog.reset();
-  var lap = new LapTracker();
-  lap.onDistance(400.0);
-  lap.onLap();
-  LapLog.record(lap);
-  Test.assertMessage(LapLog.history.intensityAt(0) == null, "the step of the old activity is forgotten");
+  LapLog.record(lap, null);
+  Test.assertEqualMessage(LapLog.history.triggerAt(2), 2, "an automatic lap by distance");
+  Test.assertEqualMessage(LapLog.history.triggerAt(1), LapLog.TRIGGER_STEP_COMPLETE, "the end of a workout step");
+  Test.assertMessage(LapLog.history.triggerAt(0) == null, "an older watch does not say");
   LapLog.reset();
   return true;
 }
@@ -140,11 +123,11 @@ function testLapLogFollowsTheTracker(logger) {
   lap.onDistance(500.0);
   lap.onTimer(150000);
   lap.onLap();
-  LapLog.record(lap);
+  LapLog.record(lap, null);
   lap.onDistance(980.0);
   lap.onTimer(290000);
   lap.onLap();
-  LapLog.record(lap);
+  LapLog.record(lap, null);
   Test.assertEqual(LapLog.history.count, 2);
   Test.assertEqual(LapLog.history.distanceAt(0), 480.0);
   Test.assertEqual(LapLog.history.durationAt(1), 150000);
