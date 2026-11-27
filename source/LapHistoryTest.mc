@@ -89,6 +89,49 @@ function testHistoryCapacityFollowsTheMemory(logger) {
   return true;
 }
 
+// Roadmap 2.2: a finished lap takes the workout intensity the field saw at the last compute, which is the
+// intensity of the step that just ended even when the watch has already moved on to the next step.
+(:test, :t1)
+function testLapLogStoresTheIntensityOfTheStepThatEnded(logger) {
+  LapLog.start();
+  var lap = new LapTracker();
+  LapLog.setIntensity(0);
+  lap.onDistance(400.0);
+  lap.onTimer(90000);
+  lap.onLap();
+  LapLog.record(lap);
+  // the next step has started (recovery), but the previous lap was already recorded
+  LapLog.setIntensity(4);
+  lap.onDistance(600.0);
+  lap.onTimer(150000);
+  lap.onLap();
+  LapLog.record(lap);
+  Test.assertEqualMessage(LapLog.history.intensityAt(1), 0, "the first lap was an active step");
+  Test.assertEqualMessage(LapLog.history.intensityAt(0), 4, "the second lap was a recovery step");
+  LapLog.setIntensity(null);
+  lap.onDistance(800.0);
+  lap.onTimer(200000);
+  lap.onLap();
+  LapLog.record(lap);
+  Test.assertMessage(LapLog.history.intensityAt(0) == null, "a lap outside a workout has no intensity");
+  LapLog.reset();
+  return true;
+}
+
+(:test, :t1)
+function testLapLogResetClearsTheIntensity(logger) {
+  LapLog.start();
+  LapLog.setIntensity(5);
+  LapLog.reset();
+  var lap = new LapTracker();
+  lap.onDistance(400.0);
+  lap.onLap();
+  LapLog.record(lap);
+  Test.assertMessage(LapLog.history.intensityAt(0) == null, "the step of the old activity is forgotten");
+  LapLog.reset();
+  return true;
+}
+
 // The log follows the lap tracker: one entry per lap event, none after a reset.
 (:test, :t1)
 function testLapLogFollowsTheTracker(logger) {

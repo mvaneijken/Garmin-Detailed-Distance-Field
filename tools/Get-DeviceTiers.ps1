@@ -78,6 +78,30 @@ $ExcludedAnnotationsByTier = @{
     T3  = 't0'
 }
 
+# Features that need a minimum Connect IQ (API) version, independent of the memory tier. Code that uses the
+# API carries the annotation (for example workoutinfo, Activity.getCurrentWorkoutStep, API 3.2.0); a device whose
+# highest Connect IQ version is lower leaves it out, and the no<feature> twin is kept instead. Devices that
+# support it exclude the twin. A firmware older than the highest one still needs a `has` check at run time.
+$ApiFeatures = [ordered]@{
+    workoutinfo = [version]'3.2.0'
+}
+
+function Get-ApiExclusions {
+    param(
+        [Parameter(Mandatory)]
+        [version]$MaxConnectIQVersion
+    )
+
+    foreach ($Feature in $ApiFeatures.Keys) {
+        if ($MaxConnectIQVersion -ge $ApiFeatures[$Feature]) {
+            "no$Feature"
+        }
+        else {
+            $Feature
+        }
+    }
+}
+
 function Get-DeviceTier {
     param(
         [Parameter(Mandatory)]
@@ -138,7 +162,7 @@ $Rows = foreach ($Product in $Products) {
         MinConnectIQ         = $Versions[0].ToString()
         MaxConnectIQ         = $Versions[-1].ToString()
         Tier                 = $Tier
-        ExcludeAnnotations   = $ExcludedAnnotationsByTier[$Tier]
+        ExcludeAnnotations   = (@($ExcludedAnnotationsByTier[$Tier] -split ';' | Where-Object { $_ }) + @(Get-ApiExclusions -MaxConnectIQVersion $Versions[-1])) -join ';'
     }
 }
 

@@ -51,6 +51,7 @@ class XTDetailedDistanceDataFieldView extends Ui.DataField {
     if (info has :timerTime) {
       lap.onTimer(info.timerTime);
     }
+    WorkoutIntensity.read();
     Probe.afterCompute(lap);
   }
 
