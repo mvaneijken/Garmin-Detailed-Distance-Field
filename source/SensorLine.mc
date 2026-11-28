@@ -1,3 +1,5 @@
+using Toybox.Activity;
+
 // The second-line contents that come from the sensors of the watch (roadmap 3.2 and 3.3): power, rolling
 // and lap average power, cadence and pace. A Stryd paired as power sensor and foot pod arrives here through
 // Activity.Info like any other sensor; nothing in the field depends on Stryd.
@@ -14,7 +16,10 @@ module SensorLine {
   (:t1)
   var speed = null;
 
-  // Called every compute with the Activity.Info of the watch.
+  // Called every compute with the Activity.Info of the watch. The values shown as current are always live;
+  // the averages only count samples taken while the timer runs: compute() keeps being called before the
+  // start, while paused and after a stop, and a power meter keeps sending then. A watch without a timer
+  // state is treated as recording.
   (:t1)
   function sample(info) {
     var watts = info has :currentPower ? info.currentPower : null;
@@ -23,7 +28,9 @@ module SensorLine {
       info has :currentCadence ? info.currentCadence : null,
       info has :currentSpeed ? info.currentSpeed : null
     );
-    LapLog.onPower(watts);
+    if (!(info has :timerState) || info.timerState == Activity.TIMER_STATE_ON) {
+      LapLog.onPower(watts);
+    }
   }
 
   (:t1)
