@@ -13,9 +13,9 @@ function testHistoryStartsEmpty(logger) {
 (:test, :t1)
 function testHistoryKeepsTheNewestLapFirst(logger) {
   var history = new LapHistory(5);
-  history.add(500.0, 150000, null);
-  history.add(480.0, 140000, null);
-  history.add(510.0, 160000, null);
+  history.add(500.0, 150000, null, null);
+  history.add(480.0, 140000, null, null);
+  history.add(510.0, 160000, null, null);
   Test.assertEqual(history.count, 3);
   Test.assertEqualMessage(history.distanceAt(0), 510.0, "newest");
   Test.assertEqualMessage(history.distanceAt(1), 480.0, "one before");
@@ -30,7 +30,7 @@ function testHistoryKeepsTheNewestLapFirst(logger) {
 function testHistoryDropsTheOldestWhenFull(logger) {
   var history = new LapHistory(3);
   for (var lap = 1; lap <= 5; lap += 1) {
-    history.add(lap * 100.0, lap * 1000 + 60000, null);
+    history.add(lap * 100.0, lap * 1000 + 60000, null, null);
   }
   Test.assertEqualMessage(history.count, 3, "never more than the capacity");
   Test.assertEqual(history.distanceAt(0), 500.0);
@@ -43,9 +43,9 @@ function testHistoryDropsTheOldestWhenFull(logger) {
 (:test, :t1)
 function testHistoryStoresTheLapTrigger(logger) {
   var history = new LapHistory(3);
-  history.add(400.0, 90000, 0);
-  history.add(200.0, 60000, 2);
-  history.add(400.0, 90000, null);
+  history.add(400.0, 90000, 0, null);
+  history.add(200.0, 60000, 2, null);
+  history.add(400.0, 90000, null, null);
   Test.assertMessage(history.triggerAt(0) == null, "the watch did not say why");
   Test.assertEqual(history.triggerAt(1), 2);
   Test.assertEqual(history.triggerAt(2), 0);
@@ -57,12 +57,12 @@ function testHistoryStoresTheLapTrigger(logger) {
 (:test, :t1)
 function testHistoryIgnoresAnEmptyLap(logger) {
   var history = new LapHistory(3);
-  Test.assertMessage(history.add(400.0, 90000, null), "a normal lap is stored");
-  Test.assertMessage(!history.add(0.0, 0, null), "a lap of no distance and no time is not");
-  Test.assertMessage(!history.add(0.4, 300, null), "neither is one under 1 m and under 1 s");
+  Test.assertMessage(history.add(400.0, 90000, null, null), "a normal lap is stored");
+  Test.assertMessage(!history.add(0.0, 0, null, null), "a lap of no distance and no time is not");
+  Test.assertMessage(!history.add(0.4, 300, null, null), "neither is one under 1 m and under 1 s");
   Test.assertEqual(history.count, 1);
-  Test.assertMessage(history.add(0.0, 5000, null), "no distance but a time (indoor): stored");
-  Test.assertMessage(history.add(5.0, 0, null), "a distance but no timer value: stored");
+  Test.assertMessage(history.add(0.0, 5000, null, null), "no distance but a time (indoor): stored");
+  Test.assertMessage(history.add(5.0, 0, null, null), "a distance but no timer value: stored");
   Test.assertEqual(history.count, 3);
   return true;
 }
@@ -70,11 +70,11 @@ function testHistoryIgnoresAnEmptyLap(logger) {
 (:test, :t1)
 function testHistoryClear(logger) {
   var history = new LapHistory(3);
-  history.add(400.0, 90000, null);
+  history.add(400.0, 90000, null, null);
   history.clear();
   Test.assertEqual(history.count, 0);
   Test.assertMessage(history.distanceAt(0) == null, "empty after clear");
-  history.add(300.0, 80000, null);
+  history.add(300.0, 80000, null, null);
   Test.assertEqual(history.distanceAt(0), 300.0);
   return true;
 }

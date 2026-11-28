@@ -119,6 +119,8 @@ The lap history of roadmap 2.1 (T1 and above only; fenix3 keeps the empty twins)
 
 The lap trigger of roadmap 2.2 (reworked, see ROADMAP): fenix3 release 11400 bytes (+32, the `LapLog` twin and the trigger constant), debug 13712. T0 headroom to the 12 KB gate is 888 bytes.
 
+Power, cadence and pace on the second line (roadmap 3.2, 3.3): with the sensor code on every tier the fenix3 release build was 12568 bytes (over the 12 KB gate, 1128 bytes more). The sensor code is therefore T1 and above (`SensorLine`, `PowerStats`), T0 keeps the twins: 11912 bytes release (+512 against the lap trigger step, mostly the label list and the extra setting strings), debug 14440. T0 headroom to the gate: 376 bytes. T0 is full: the next T0 feature needs its own decision (see `docs/ROADMAP.md`).
+
 The debug build uses 12888 bytes. The setting does not change the number: the default (previous lap distance) and "current lap time" give the same value, because the code is the same and only the label differs. The growth is code, not data: two time formatters, the five-way content choice, the lap timer fields and the label loading. It is the largest step since the baseline and it takes the T0 release usage to 10.9 KB (1024-byte KB) of the 12 KB gate below.
 
 What this shows:
