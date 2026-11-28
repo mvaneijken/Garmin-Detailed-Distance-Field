@@ -1,0 +1,22 @@
+<strings>
+	<string id="textcolor">Text color (on a map page the Auto color can be hard to read)</string>
+	<string id="textcolor0">Auto (follows the data screen background)</string>
+	<string id="textcolor1">Black</string>
+	<string id="textcolor2">White</string>
+	<string id="halo">Light or dark outline around the text, for map pages (more battery)</string>
+	<string id="lapchart">Show lap bar chart behind the value (needs a large field)</string>
+	<string id="powerlabel">PWR</string>
+	<string id="power3label">P3s</string>
+	<string id="power10label">P10s</string>
+	<string id="power30label">P30s</string>
+	<string id="lappowerlabel">LapW</string>
+	<string id="cadencelabel">CAD</string>
+	<string id="pacelabel">Pace</string>
+	<string id="secondline5">Power (PWR, from a power meter such as a Stryd)</string>
+	<string id="secondline6">Power, last 3 seconds (P3s)</string>
+	<string id="secondline7">Power, last 10 seconds (P10s)</string>
+	<string id="secondline8">Power, last 30 seconds (P30s)</string>
+	<string id="secondline9">Average power of the lap (LapW)</string>
+	<string id="secondline10">Cadence (CAD)</string>
+	<string id="secondline11">Current pace (Pace)</string>
+</strings>

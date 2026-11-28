@@ -41,6 +41,14 @@ class ParseProbeLogTest(unittest.TestCase):
         events = probe.parse_probe_log(text)
         self.assertEqual(len(events), 1)
 
+    def test_the_background_line_of_the_map_page_probe_is_read_and_is_not_a_boundary(self):
+        # roadmap 6.1: P,bg,<clock>,<background color>,<obscurity flags>,0,0,0
+        events = probe.parse_probe_log("P,bg,5000,16777215,7,0,0,0")
+        self.assertEqual(events[0].name, "bg")
+        self.assertEqual(events[0].timer_ms, 16777215)
+        rows, _ = probe.compare(events, None)
+        self.assertEqual(rows, [])
+
     def test_windows_line_endings(self):
         text = line("P", "lap", 5, 5, "1.0", "1.0", "0", 2) + "\r\n"
         self.assertEqual(len(probe.parse_probe_log(text)), 1)

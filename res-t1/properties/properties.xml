@@ -1,0 +1,5 @@
+<properties>
+	<property id="textcolor" type="number">0</property>
+	<property id="halo" type="boolean">false</property>
+	<property id="lapchart" type="boolean">false</property>
+</properties>

@@ -26,7 +26,7 @@
     The jungle lines use feature annotations: t1, t2 and t3 mean "needs at least this tier" (the code
     is left out on lower tiers), t0 marks the no-op twin that only T0 devices keep. With -UpdateJungles
     the lines are written into the marked block of monkey.jungle and probe.jungle (every device line
-    repeats the base annotations of its file, because a device line replaces the base line). Run this
+    repeats the base annotations of its file, because a device line replaces the base line; the T0 devices also get a resourcePath line without the res-t1 folder). Run this
     script again after every SDK or device update.
 .PARAMETER RepositoryRoot
     The repository root (manifest.xml, .ciq-sdk-version).
@@ -209,6 +209,11 @@ function Update-JungleTierBlock {
     $Block = @($Begin)
     foreach ($Row in $Rows) {
         $Block += "$($Row.Id).excludeAnnotations = $Base;$($Row.ExcludeAnnotations)".Replace(' = ;', ' = ')
+    }
+    # The resources of the T1-only settings and strings (res-t1) are not part of a T0 build: strings and
+    # properties are loaded into the 16 KB of those devices. T0 gets its own, shorter settings (res-t0).
+    foreach ($Row in $Rows | Where-Object { $_.Tier -eq 'T0' }) {
+        $Block += "$($Row.Id).resourcePath = res-t0;resources"
     }
     $Block += $End
     $BlockText = $Block -join "`n"

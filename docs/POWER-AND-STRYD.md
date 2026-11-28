@@ -17,7 +17,7 @@ Setting **Second line shows** (needs "Show second line" on):
 
 Rules: a value the watch does not have shows `--` (or `--:--`); power of 0 W is a value (coasting) and counts in the averages; a missing power sample does not. The three power windows are averages over the last 3, 10 or 30 samples; after a lap button press the rolling windows continue, only the lap average starts again. Every finished lap also stores its average power in the lap history (T1 and above).
 
-Not on the watches with 16 KB of data field memory (T0: fēnix 3 / 3 HR, Forerunner 230, 235, 630 and 920XT, D2 Bravo and Bravo Titanium, vívoactive): their release build had no room for the sensor code (see `docs/MEMORY-BASELINE.md`). They show `--` for these contents.
+Not on the watches with 16 KB of data field memory (T0: fēnix 3 / 3 HR, Forerunner 230, 235, 630 and 920XT, D2 Bravo and Bravo Titanium, vívoactive): their release build had no room for the sensor code (see `docs/MEMORY-BASELINE.md`). On those watches the setting offers only the first five contents; the settings and strings of the T1-only features are in the `res-t1` resource folder, which a T0 build does not contain.
 
 ## Using a Stryd (to be confirmed on your watch)
 

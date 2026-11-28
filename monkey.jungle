@@ -4,6 +4,8 @@ project.manifest = manifest.xml
 # copies of the sources in nested folders such as .claude/worktrees/*/source and fails the build with
 # "Redefinition of ..." errors. Only the source folder is part of the app.
 base.sourcePath = source
+# Settings, strings and properties of the T1-only features are in res-t1; T0 devices get res-t0 instead (generated lines below).
+base.resourcePath = res-t1;resources
 
 # Probe code (source/Probe.mc, roadmap 0.5) is only compiled in by probe.jungle.
 base.excludeAnnotations = probe
@@ -162,4 +164,13 @@ vivoactive4.excludeAnnotations = probe;t0;t2;t3;lapinfo
 vivoactive4s.excludeAnnotations = probe;t0;t2;t3;lapinfo
 vivoactive5.excludeAnnotations = probe;t0;lapinfo
 vivoactive6.excludeAnnotations = probe;t0
+d2bravo.resourcePath = res-t0;resources
+d2bravo_titanium.resourcePath = res-t0;resources
+fenix3.resourcePath = res-t0;resources
+fenix3_hr.resourcePath = res-t0;resources
+fr230.resourcePath = res-t0;resources
+fr235.resourcePath = res-t0;resources
+fr630.resourcePath = res-t0;resources
+fr920xt.resourcePath = res-t0;resources
+vivoactive.resourcePath = res-t0;resources
 # END generated tier lines
