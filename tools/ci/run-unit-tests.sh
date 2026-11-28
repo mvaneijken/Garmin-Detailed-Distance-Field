@@ -59,3 +59,7 @@ run_pass monkey.jungle ''
 if [ -f "$source_dir/probe.jungle" ]; then
   run_pass probe.jungle 'probe-'
 fi
+# The Stryd spike (roadmap 3.1) needs the Ant permission and has its own manifest; it is compiled and tested here too.
+if [ -f "$source_dir/spike.jungle" ]; then
+  run_pass spike.jungle 'spike-'
+fi

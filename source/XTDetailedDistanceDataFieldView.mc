@@ -22,6 +22,7 @@ class XTDetailedDistanceDataFieldView extends Ui.DataField {
     settings.load();
     lap = new LapTracker();
     LapLog.start();
+    Spike.start();
     layout = new Layout();
     labelText = Ui.loadResource(Rez.Strings.label);
     loadSecondLineLabel();
@@ -54,6 +55,7 @@ class XTDetailedDistanceDataFieldView extends Ui.DataField {
     // Power, cadence and speed come from the watch: a Stryd paired as power sensor and foot pod shows up here.
     SensorLine.sample(info);
     Probe.afterCompute(lap);
+    Spike.tick();
   }
 
   // Display the value you computed here. This will be called
