@@ -1,0 +1,39 @@
+<settings>
+	<setting propertyKey="@Properties.showLastLap_prop"
+		title="@Strings.showLastLap_prop">
+		<settingConfig type="boolean" />
+	</setting>
+	<setting propertyKey="@Properties.textcolor"
+		title="@Strings.textcolor">
+		<settingConfig type="list">
+			<listEntry value="0">@Strings.textcolor0</listEntry>
+			<listEntry value="1">@Strings.textcolor1</listEntry>
+			<listEntry value="2">@Strings.textcolor2</listEntry>
+		</settingConfig>
+	</setting>
+	<setting propertyKey="@Properties.halo"
+		title="@Strings.halo">
+		<settingConfig type="boolean" />
+	</setting>
+	<setting propertyKey="@Properties.lapchart"
+		title="@Strings.lapchart">
+		<settingConfig type="boolean" />
+	</setting>
+	<setting propertyKey="@Properties.secondline"
+		title="@Strings.secondline">
+		<settingConfig type="list">
+			<listEntry value="0">@Strings.secondline0</listEntry>
+			<listEntry value="1">@Strings.secondline1</listEntry>
+			<listEntry value="2">@Strings.secondline2</listEntry>
+			<listEntry value="3">@Strings.secondline3</listEntry>
+			<listEntry value="4">@Strings.secondline4</listEntry>
+			<listEntry value="5">@Strings.secondline5</listEntry>
+			<listEntry value="6">@Strings.secondline6</listEntry>
+			<listEntry value="7">@Strings.secondline7</listEntry>
+			<listEntry value="8">@Strings.secondline8</listEntry>
+			<listEntry value="9">@Strings.secondline9</listEntry>
+			<listEntry value="10">@Strings.secondline10</listEntry>
+			<listEntry value="11">@Strings.secondline11</listEntry>
+		</settingConfig>
+	</setting>
+</settings>

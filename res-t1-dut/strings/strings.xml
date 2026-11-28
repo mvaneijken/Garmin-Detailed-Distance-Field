@@ -1,0 +1,22 @@
+<strings>
+	<string id="textcolor">Tekstkleur (op een kaartpagina kan Auto slecht leesbaar zijn)</string>
+	<string id="textcolor0">Auto (volgt de achtergrond van het gegevensscherm)</string>
+	<string id="textcolor1">Zwart</string>
+	<string id="textcolor2">Wit</string>
+	<string id="halo">Lichte of donkere rand om de tekst, voor kaartpagina's (meer batterij)</string>
+	<string id="lapchart">Ronde-staafdiagram achter de waarde tonen (alleen in een groot veld)</string>
+	<string id="powerlabel">VRM</string>
+	<string id="power3label">V3s</string>
+	<string id="power10label">V10s</string>
+	<string id="power30label">V30s</string>
+	<string id="lappowerlabel">RndW</string>
+	<string id="cadencelabel">CAD</string>
+	<string id="pacelabel">Tempo</string>
+	<string id="secondline5">Vermogen (VRM, van een vermogensmeter zoals een Stryd)</string>
+	<string id="secondline6">Vermogen, laatste 3 seconden (V3s)</string>
+	<string id="secondline7">Vermogen, laatste 10 seconden (V10s)</string>
+	<string id="secondline8">Vermogen, laatste 30 seconden (V30s)</string>
+	<string id="secondline9">Gemiddeld vermogen van de ronde (RndW)</string>
+	<string id="secondline10">Cadans (CAD)</string>
+	<string id="secondline11">Huidig tempo (Tempo)</string>
+</strings>

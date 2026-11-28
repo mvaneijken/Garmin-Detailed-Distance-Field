@@ -1,6 +1,8 @@
 # Lap probe build for the device test of roadmap 0.5 (tools/probe/Build-LapProbe.ps1). Never released.
 project.manifest = manifest.xml
 base.sourcePath = source
+# Settings, strings and properties of the T1-only features are in res-t1; T0 devices get res-t0 instead (generated lines below).
+base.resourcePath = res-t1;resources
 base.excludeAnnotations = noprobe
 
 # BEGIN generated tier lines (tools/Get-DeviceTiers.ps1 -UpdateJungles, do not edit by hand)
@@ -157,4 +159,13 @@ vivoactive4.excludeAnnotations = noprobe;t0;t2;t3;lapinfo
 vivoactive4s.excludeAnnotations = noprobe;t0;t2;t3;lapinfo
 vivoactive5.excludeAnnotations = noprobe;t0;lapinfo
 vivoactive6.excludeAnnotations = noprobe;t0
+d2bravo.resourcePath = res-t0;resources
+d2bravo_titanium.resourcePath = res-t0;resources
+fenix3.resourcePath = res-t0;resources
+fenix3_hr.resourcePath = res-t0;resources
+fr230.resourcePath = res-t0;resources
+fr235.resourcePath = res-t0;resources
+fr630.resourcePath = res-t0;resources
+fr920xt.resourcePath = res-t0;resources
+vivoactive.resourcePath = res-t0;resources
 # END generated tier lines

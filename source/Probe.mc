@@ -42,6 +42,32 @@ module Probe {
     );
   }
 
+  // Roadmap 6.1: what the watch reports as the data field background, and which screen corners are
+  // obscured, on a map page (set the data screen background to black, white and automatic). Printed when
+  // one of them changes: P,bg,<clock>,<background color>,<obscurity flags>,0,0,0
+  (:probe)
+  var lastBackground = null;
+  (:probe)
+  var lastObscurity = null;
+
+  (:probe)
+  function background(view, color) {
+    var obscurity = view.getObscurityFlags();
+    if (color != lastBackground || obscurity != lastObscurity) {
+      lastBackground = color;
+      lastObscurity = obscurity;
+      Sys.println(backgroundLine(Sys.getTimer(), color, obscurity));
+    }
+  }
+
+  (:probe)
+  function backgroundLine(clock, color, obscurity) {
+    return "P,bg," + clock + "," + color + "," + obscurity + ",0,0,0";
+  }
+
+  (:noprobe)
+  function background(view, color) {}
+
   (:noprobe)
   function event(name, lap) {}
 

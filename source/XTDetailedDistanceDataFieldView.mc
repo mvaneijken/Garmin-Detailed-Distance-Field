@@ -73,10 +73,13 @@ class XTDetailedDistanceDataFieldView extends Ui.DataField {
     );
 
     var backgroundColor = getBackgroundColor();
+    Probe.background(self, backgroundColor);
     // The chart goes behind the text: draw it before the text color is set.
     if (settings.lapChart) {
       LapChart.draw(dc, backgroundColor, lap.currentLap);
     }
+    // The text colour follows the data screen background; on T1 and above the setting and the halo are
+    // applied per line by TextStyle.
     dc.setColor(
       backgroundColor == Gfx.COLOR_BLACK ? Gfx.COLOR_WHITE : Gfx.COLOR_BLACK,
       Gfx.COLOR_TRANSPARENT
@@ -92,32 +95,13 @@ class XTDetailedDistanceDataFieldView extends Ui.DataField {
     }
 
     if (settings.hideLabel == false) {
-      dc.drawText(
-        layout.startPosX,
-        layout.labelPosY,
-        layout.labelFont,
-        labelText,
-        layout.justification
-      );
+      TextStyle.drawLine(dc, layout, layout.labelPosY, layout.labelFont, labelText, settings, backgroundColor);
     }
-    dc.drawText(
-      layout.startPosX,
-      layout.valuePosY,
-      layout.valueFont,
-      lapDistanceString,
-      layout.justification
-    );
+    TextStyle.drawLine(dc, layout, layout.valuePosY, layout.valueFont, lapDistanceString, settings, backgroundColor);
     if (settings.showLastLap == true) {
-      dc.drawText(
-        layout.startPosX,
-        layout.lastValuePosY,
-        layout.lastValueFont,
-        secondLineText,
-        layout.justification
-      );
+      TextStyle.drawLine(dc, layout, layout.lastValuePosY, layout.lastValueFont, secondLineText, settings, backgroundColor);
     }
   }
-
   function onTimerLap() {
     handleLap("lap", null);
   }

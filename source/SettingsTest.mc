@@ -16,6 +16,8 @@ function testSettingsLoadDefaults(logger) {
   Test.assertEqual(settings.heightOversize, 100);
   Test.assertEqual(settings.widthOversize, 100);
   Test.assertEqualMessage(settings.secondLine, 0, "the second line shows the previous lap distance");
+  Test.assertEqualMessage(settings.textColor, 0, "the text color follows the background (Auto)");
+  Test.assertEqualMessage(settings.halo, false, "no halo by default");
   Test.assertEqualMessage(settings.lapChart, false, "the lap chart is off until the owner of the watch turns it on");
   return true;
 }

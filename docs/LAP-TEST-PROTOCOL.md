@@ -90,6 +90,18 @@ Run each scenario as its own activity and keep it short (the log holds about 100
 
 The simulator (S1, S2 and S7 on fenix3): run `monkeydo tools\probe\out\fenix3\LAPPROBE.PRG fenix3` with the console captured to a file, press the lap and timer commands of its Simulation menu, and give that file to `--log`. There is no FIT file; the table then has an empty native column.
 
+### Map page probe (roadmap 6.1)
+
+The same probe build also answers a question about map pages: what does the watch report as the data field background there? It prints `P,bg,<clock>,<background color>,<obscurity flags>,0,0,0` whenever the background color or the obscured corners change. Put the probe field on a data screen that is a map page, set the data screen background to black, then white, then automatic (one short activity each, or change the setting during one activity), and read the log as above. Colors are the numbers of `Graphics.COLOR_*` (0 black, 16777215 white). Write the values in the table below; no FIT file is needed (`--fit` is left out).
+
+| Date | Device | Data screen background setting | Reported background color | Obscurity flags | Text on screen (readable?) |
+|---|---|---|---|---|---|
+| | fēnix 9 Pro 47 mm | black | | | |
+| | fēnix 9 Pro 47 mm | white | | | |
+| | fēnix 9 Pro 47 mm | automatic | | | |
+
+With the answer, the settings "Text color" and "Halo" (roadmap 6.2, 6.3; T1 and above) can be tried on the same page: set the text color to Black and the halo on, and note whether the field matches the native look.
+
 ## Results
 
 Copy one row per scenario and device. Result codes: `ok` (as expected), `diff` (differs, describe), `n/a` (not possible on this device).

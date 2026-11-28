@@ -7,6 +7,9 @@ class Settings {
   var showLastLap = false;
   // The lap bar chart behind the value (roadmap 4, T1 and above).
   var lapChart = false;
+  // Text colour: 0 Auto (follows the data screen background), 1 Black, 2 White; and the halo behind the text.
+  var textColor = 0;
+  var halo = false;
   // What the second line shows: 0 previous lap distance, 1 previous lap time, 2 previous lap pace,
   // 3 current lap time, 4 current lap number, 5 power, 6 power of the last 3 s, 7 of the last 10 s,
   // 8 of the last 30 s, 9 average power of the lap, 10 cadence, 11 pace.
@@ -25,6 +28,8 @@ class Settings {
   function load() {
     showLastLap = readProperty("showLastLap_prop") == true;
     lapChart = readProperty("lapchart") == true;
+    textColor = clamp(readProperty("textcolor"), 0, 2, 0);
+    halo = readProperty("halo") == true;
     secondLine = clamp(readProperty("secondline"), 0, 11, 0);
     zeroToOneDigits = clamp(readProperty("zerotoone"), 0, 3, 3);
     oneToTenDigits = clamp(readProperty("onetoten"), 0, 3, 3);

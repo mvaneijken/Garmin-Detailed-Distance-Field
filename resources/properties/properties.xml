@@ -1,6 +1,5 @@
 <properties>
 	<property id="showLastLap_prop" type="boolean">true</property>
-	<property id="lapchart" type="boolean">false</property>
 	<property id="secondline" type="number">0</property>
 	<property id="zerotoone" type="number">3</property>
 	<property id="onetoten" type="number">3</property>
