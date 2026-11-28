@@ -25,7 +25,7 @@
 
     The jungle lines use feature annotations: t1, t2 and t3 mean "needs at least this tier" (the code
     is left out on lower tiers), t0 marks the no-op twin that only T0 devices keep. With -UpdateJungles
-    the lines are written into the marked block of monkey.jungle and probe.jungle (every device line
+    the lines are written into the marked block of monkey.jungle, probe.jungle and spike.jungle (every device line
     repeats the base annotations of its file, because a device line replaces the base line; the T0 devices also get a resourcePath line without the res-t1 folder). Run this
     script again after every SDK or device update.
 .PARAMETER RepositoryRoot
@@ -232,7 +232,7 @@ function Update-JungleTierBlock {
 }
 
 if ($UpdateJungles) {
-    foreach ($JungleFile in 'monkey.jungle', 'probe.jungle') {
+    foreach ($JungleFile in 'monkey.jungle', 'probe.jungle', 'spike.jungle') {
         Update-JungleTierBlock -Path (Join-Path -Path $RepositoryRoot -ChildPath $JungleFile)
     }
 }
