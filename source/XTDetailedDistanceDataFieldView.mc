@@ -73,6 +73,10 @@ class XTDetailedDistanceDataFieldView extends Ui.DataField {
     );
 
     var backgroundColor = getBackgroundColor();
+    // The chart goes behind the text: draw it before the text color is set.
+    if (settings.lapChart) {
+      LapChart.draw(dc, backgroundColor, lap.currentLap);
+    }
     dc.setColor(
       backgroundColor == Gfx.COLOR_BLACK ? Gfx.COLOR_WHITE : Gfx.COLOR_BLACK,
       Gfx.COLOR_TRANSPARENT

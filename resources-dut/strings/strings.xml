@@ -7,6 +7,7 @@
 	<string id="laptimelabel">RT</string>
 	<string id="lapnumberlabel">Rnd</string>
 	<string id="showLastLap_prop">Tweede regel weergeven</string>
+	<string id="lapchart">Ronde-staafdiagram achter de waarde tonen (alleen in een groot veld; niet op fenix 3, FR230/235/630/920XT, D2 Bravo, vivoactive)</string>
 	<string id="secondline">Tweede regel toont</string>
 	<string id="secondline0">Afstand vorige ronde (LR)</string>
 	<string id="secondline1">Tijd vorige ronde (LRT)</string>

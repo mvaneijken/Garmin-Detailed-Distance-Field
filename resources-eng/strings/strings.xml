@@ -7,6 +7,7 @@
 	<string id="laptimelabel">CT</string>
 	<string id="lapnumberlabel">Lap</string>
 	<string id="showLastLap_prop">Show second line</string>
+	<string id="lapchart">Show lap bar chart behind the value (needs a large field; not on fenix 3, FR230/235/630/920XT, D2 Bravo, vivoactive)</string>
 	<string id="secondline">Second line shows</string>
 	<string id="secondline0">Previous lap distance (LL)</string>
 	<string id="secondline1">Previous lap time (LT)</string>

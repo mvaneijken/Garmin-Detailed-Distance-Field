@@ -3,6 +3,10 @@
 		title="@Strings.showLastLap_prop">
 		<settingConfig type="boolean" />
 	</setting>
+	<setting propertyKey="@Properties.lapchart"
+		title="@Strings.lapchart">
+		<settingConfig type="boolean" />
+	</setting>
 	<setting propertyKey="@Properties.secondline"
 		title="@Strings.secondline">
 		<settingConfig type="list">
