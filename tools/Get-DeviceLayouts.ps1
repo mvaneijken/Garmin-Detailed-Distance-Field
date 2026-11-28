@@ -63,7 +63,7 @@ foreach ($Product in $Products) {
     $SimulatorPath = Join-Path -Path $DevicesRoot -ChildPath "$Product/simulator.json"
     $CompilerPath = Join-Path -Path $DevicesRoot -ChildPath "$Product/compiler.json"
     if (-not (Test-Path -LiteralPath $SimulatorPath)) {
-        continue
+        throw "No simulator.json for '$Product' in '$DevicesRoot'. Download the device with the SDK Manager: a partial install would leave devices out of the list."
     }
 
     $Simulator = Get-Content -LiteralPath $SimulatorPath -Raw -Encoding utf8 | ConvertFrom-Json
